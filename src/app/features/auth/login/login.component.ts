@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ElementRef, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -16,16 +16,37 @@ export class LoginComponent {
   mensajeError: string | null = null;
   cargando: boolean = false;
 
+  // Hacemos referencia al input de contraseña usando el ID (#inputPassword) del HTML
+  @ViewChild('inputPassword') inputPassword!: ElementRef;
+
   constructor(
     private fb: FormBuilder,
     private authService: AuthService,
     private router: Router
   ) {
-    // Construimos las validaciones del formulario
+    // Construimos las validaciones del formulario institucionales
     this.formularioLogin = this.fb.group({
       email: ['', [Validators.required, Validators.email, Validators.pattern(/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/)]],
       password: ['', [Validators.required, Validators.minLength(4)]]
     });
+  }
+
+  /**
+   * Muestra la contraseña cambiando el tipo de input a 'text' temporalmente
+   */
+  mostrarContrasena(): void {
+    if (this.inputPassword) {
+      this.inputPassword.nativeElement.type = 'text';
+    }
+  }
+
+  /**
+   * Oculta la contraseña regresando el tipo de input a 'password'
+   */
+  ocultarContrasena(): void {
+    if (this.inputPassword) {
+      this.inputPassword.nativeElement.type = 'password';
+    }
   }
 
   /**
