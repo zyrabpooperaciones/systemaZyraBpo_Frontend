@@ -7,6 +7,11 @@ export const routes: Routes = [
     path: 'login',
     loadComponent: () => import('./features/auth/login/login.component').then(m => m.LoginComponent)
   },
+  // 🔑 NUEVA RUTA CON LAZY LOADING PARA EL PORTAL DE SEGURIDAD
+  {
+    path: 'recuperar-password',
+    loadComponent: () => import('./features/auth/recuperar-password/recuperar-password.component').then(m => m.RecuperarPasswordComponent)
+  },
   {
     path: 'dashboard',
     loadComponent: () => import('./features/dashboard/dashboard.component').then(m => m.DashboardComponent),

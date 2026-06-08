@@ -60,6 +60,24 @@ export class AuthService {
     return !!this.obtenerToken();
   }
 
+  // ============================================================================
+  // NUEVOS MÉTODOS DE RECUPERACIÓN Y RESTABLECIMIENTO (CONECTADOS A FASTAPI)
+  // ============================================================================
+
+  /**
+   * Dispara el correo institucional a FastAPI para generar el token temporal de 15 minutos
+   */
+  solicitarRecuperacion(email: string): Observable<any> {
+    return this.http.post<any>(`${this.URL_API}/recuperar-password`, { email });
+  }
+
+  /**
+   * Envía el token original y la nueva contraseña para reescribir las credenciales en Postgres 17
+   */
+  restablecerPassword(datos: { token: string; nueva_password: string }): Observable<any> {
+    return this.http.post<any>(`${this.URL_API}/restablecer-password`, datos);
+  }
+
   //Destruye el rastro local del token en el navegador
   private limpiarSesionLocal(): void {
     sessionStorage.removeItem('zyra_token');
