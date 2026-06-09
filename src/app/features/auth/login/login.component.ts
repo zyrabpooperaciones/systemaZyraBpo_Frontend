@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../../core/services/auth/auth.service';
+import { ToastService } from '../../../core/services/toast/toast.service';
 
 @Component({
   selector: 'app-login',
@@ -22,7 +23,8 @@ export class LoginComponent {
   constructor(
     private fb: FormBuilder,
     private authService: AuthService,
-    private router: Router
+    private router: Router,
+    private toastService: ToastService
   ) {
     // Construimos las validaciones del formulario institucionales
     this.formularioLogin = this.fb.group({
@@ -55,6 +57,7 @@ export class LoginComponent {
   alEnviar(): void {
     if (this.formularioLogin.invalid) {
       this.formularioLogin.markAllAsTouched();
+      this.toastService.warning('Por favor, completa los campos obligatorios.');
       return;
     }
 
@@ -64,6 +67,7 @@ export class LoginComponent {
     this.authService.login(this.formularioLogin.value).subscribe({
       next: (respuesta) => {
         this.cargando = false;
+        this.toastService.success(`¡Bienvenido, ${respuesta.usuario.nombre}!`);
         // ¡Éxito! Redirigimos al Dashboard (pantalla interna)
         this.router.navigate(['/dashboard']);
       },
@@ -75,7 +79,8 @@ export class LoginComponent {
         } else {
           this.mensajeError = 'Ocurrió un error inesperado. Intente más tarde.';
         }
+        this.toastService.error(this.mensajeError || 'Ocurrió un error inesperado. Intente más tarde.');
       }
     });
   }
-}
+}

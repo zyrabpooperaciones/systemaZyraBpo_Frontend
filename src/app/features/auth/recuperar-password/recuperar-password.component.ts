@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../../core/services/auth/auth.service';
+import { ToastService } from '../../../core/services/toast/toast.service';
 
 @Component({
   selector: 'app-recuperar-password',
@@ -28,7 +29,8 @@ export class RecuperarPasswordComponent implements OnInit {
     private fb: FormBuilder,
     private route: ActivatedRoute,
     private router: Router,
-    private authService: AuthService
+    private authService: AuthService,
+    private toastService: ToastService
   ) {
     this.inicializarFormularios();
   }
@@ -59,6 +61,7 @@ export class RecuperarPasswordComponent implements OnInit {
   enviarSolicitudCorreo(): void {
     if (this.formCorreo.invalid) {
       this.formCorreo.markAllAsTouched();
+      this.toastService.warning('Por favor, introduce un correo electrónico válido.');
       return;
     }
 
@@ -70,6 +73,7 @@ export class RecuperarPasswordComponent implements OnInit {
       next: (res) => {
         this.cargando = false;
         this.mensajeExito = res.mensaje;
+        this.toastService.success(res.mensaje || 'Enlace de recuperación enviado con éxito.');
         
         // Impresión en consola para pruebas locales rápidas sin abrir Postgres
         if (res.token_de_prueba) {
@@ -79,6 +83,7 @@ export class RecuperarPasswordComponent implements OnInit {
       error: (err) => {
         this.cargando = false;
         this.mensajeError = err.error?.detail || 'No se pudo procesar la solicitud.';
+        this.toastService.error(this.mensajeError || 'No se pudo procesar la solicitud.');
       }
     });
   }
@@ -89,6 +94,7 @@ export class RecuperarPasswordComponent implements OnInit {
   enviarNuevaContrasena(): void {
     if (this.formClave.invalid) {
       this.formClave.markAllAsTouched();
+      this.toastService.warning('Por favor, completa los campos requeridos.');
       return;
     }
 
@@ -96,6 +102,7 @@ export class RecuperarPasswordComponent implements OnInit {
 
     if (password !== confirmarPassword) {
       this.mensajeError = 'Las contraseñas introducidas no coinciden.';
+      this.toastService.error(this.mensajeError || 'Las contraseñas introducidas no coinciden.');
       return;
     }
 
@@ -109,12 +116,14 @@ export class RecuperarPasswordComponent implements OnInit {
       next: (res) => {
         this.cargando = false;
         this.mensajeExito = res.mensaje;
+        this.toastService.success(res.mensaje || 'Contraseña restablecida con éxito.');
         // Esperamos 4 segundos para que el usuario lea el éxito y lo mandamos al Login
         setTimeout(() => this.router.navigate(['/login']), 4000);
       },
       error: (err) => {
         this.cargando = false;
         this.mensajeError = err.error?.detail || 'El enlace expiró o es inválido.';
+        this.toastService.error(this.mensajeError || 'El enlace expiró o es inválido.');
       }
     });
   }
