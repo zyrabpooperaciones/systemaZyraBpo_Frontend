@@ -67,7 +67,7 @@ export class LoginComponent {
     this.authService.login(this.formularioLogin.value).subscribe({
       next: (respuesta) => {
         this.cargando = false;
-        this.toastService.success(`¡Bienvenido, ${respuesta.usuario.nombre_completo}!`);
+        this.toastService.success(`¡Bienvenido, ${respuesta.usuario.nombre} ${respuesta.usuario.apellido}!`);
         // ¡Éxito! Redirigimos al Dashboard (pantalla interna)
         this.router.navigate(['/dashboard']);
       },

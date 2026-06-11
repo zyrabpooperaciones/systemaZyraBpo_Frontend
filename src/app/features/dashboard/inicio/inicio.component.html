@@ -11,7 +11,7 @@
         Sesión Operacional Activa
       </span>
       <h2 class="text-2xl md:text-4xl font-extrabold tracking-tight">
-        {{ getSaludo() }}, <span class="text-transparent bg-clip-text bg-linear-to-r from-orange-400 to-amber-300">{{ usuarioActual()?.nombre_completo || 'Usuario Zyra' }}</span>
+        {{ getSaludo() }}, <span class="text-transparent bg-clip-text bg-linear-to-r from-orange-400 to-amber-300">{{ usuarioActual() ? (usuarioActual()!.nombre + ' ' + usuarioActual()!.apellido) : 'Usuario Zyra' }}</span>
       </h2>
       <p class="text-slate-300 text-sm md:text-base font-medium leading-relaxed">
         Te damos la bienvenida al portal operativo de Zyra BPO. Desde aquí puedes administrar usuarios, gestionar roles jerárquicos y controlar los volcados de base de datos de manera centralizada.
@@ -20,10 +20,6 @@
         <div class="flex items-center space-x-2 text-xs text-slate-300 bg-white/5 px-3 py-1.5 rounded-lg border border-white/10">
           <span class="font-bold text-orange-400">Cargo:</span>
           <span class="capitalize">{{ usuarioActual()?.cargo || 'Sin cargo asignado' }}</span>
-        </div>
-        <div class="flex items-center space-x-2 text-xs text-slate-300 bg-white/5 px-3 py-1.5 rounded-lg border border-white/10">
-          <span class="font-bold text-orange-400">Rol:</span>
-          <span class="capitalize">{{ usuarioActual()?.rol || 'Sin rol' }}</span>
         </div>
       </div>
     </div>

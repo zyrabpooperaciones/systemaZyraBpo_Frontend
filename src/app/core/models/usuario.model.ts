@@ -1,9 +1,11 @@
 export interface Usuario {
   id: number;
-  nombre_completo: string;
+  nombre: string;
+  apellido: string;
   email: string;
-  rol: string;
   cargo: string;
+  ci: string;
+  telefono?: string;
 }
 
 export interface LoginResponse {

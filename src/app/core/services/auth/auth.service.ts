@@ -68,6 +68,27 @@ export class AuthService {
     return !!this.obtenerToken();
   }
 
+  /**
+   * Actualiza el perfil del usuario activo (Nombre y teléfono)
+   */
+  actualizarPerfil(datos: { nombre: string; apellido: string; telefono?: string }): Observable<any> {
+    return this.http.put<any>(`${environment.apiUrl}/auth/perfil`, datos).pipe(
+      tap(respuesta => {
+        if (respuesta && respuesta.usuario) {
+          sessionStorage.setItem('zyra_usuario', JSON.stringify(respuesta.usuario));
+          this.usuarioActual.set(respuesta.usuario);
+        }
+      })
+    );
+  }
+
+  /**
+   * Cambia la contraseña del usuario activo
+   */
+  cambiarPassword(datos: { password_actual: string; nueva_password: string }): Observable<any> {
+    return this.http.put<any>(`${environment.apiUrl}/auth/cambiar-password`, datos);
+  }
+
   // ============================================================================
   // NUEVOS MÉTODOS DE RECUPERACIÓN Y RESTABLECIMIENTO (CONECTADOS A FASTAPI)
   // ============================================================================

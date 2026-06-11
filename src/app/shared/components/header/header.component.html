@@ -30,8 +30,10 @@
       
       <!-- Información del usuario (visible en desktop) -->
       <div class="hidden md:flex flex-col text-right">
-        <span class="text-sm font-semibold text-slate-800">{{ usuarioActual()?.nombre_completo || 'Usuario Zyra' }}</span>
-        <span class="text-xs text-slate-400 capitalize">{{ usuarioActual()?.cargo || usuarioActual()?.rol || 'Operaciones' }}</span>
+        <span class="text-sm font-semibold text-slate-800">
+          {{ usuarioActual() ? (usuarioActual()!.nombre + ' ' + usuarioActual()!.apellido) : 'Usuario Zyra' }}
+        </span>
+        <span class="text-xs text-slate-400 capitalize">{{ usuarioActual()?.cargo || 'Operaciones' }}</span>
       </div>
 
       <!-- Avatar con iniciales, degradado corporativo naranja/azul -->
@@ -57,8 +59,8 @@
       
       <!-- Detalle rápido del usuario en móvil -->
       <div class="px-4 py-3 border-b border-slate-100 md:hidden">
-        <p class="text-sm font-bold text-slate-800">{{ usuarioActual()?.nombre_completo }}</p>
-        <p class="text-xs text-slate-400 capitalize">{{ usuarioActual()?.cargo || usuarioActual()?.rol }}</p>
+        <p class="text-sm font-bold text-slate-800">{{ usuarioActual()?.nombre }} {{ usuarioActual()?.apellido }}</p>
+        <p class="text-xs text-slate-400 capitalize">{{ usuarioActual()?.cargo || 'Operaciones' }}</p>
       </div>
 
       <!-- Opción Perfil -->

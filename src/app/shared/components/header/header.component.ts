@@ -63,11 +63,9 @@ export class HeaderComponent {
   // Retorna las iniciales del usuario
   getIniciales(): string {
     const usuario = this.usuarioActual();
-    if (!usuario || !usuario.nombre_completo) return 'U';
-    const partes = usuario.nombre_completo.split(' ');
-    if (partes.length >= 2) {
-      return (partes[0].charAt(0) + partes[1].charAt(0)).toUpperCase();
-    }
-    return partes[0].charAt(0).toUpperCase();
+    if (!usuario) return 'U';
+    const n = usuario.nombre ? usuario.nombre.charAt(0) : '';
+    const a = usuario.apellido ? usuario.apellido.charAt(0) : '';
+    return (n + a).toUpperCase() || 'U';
   }
 }
