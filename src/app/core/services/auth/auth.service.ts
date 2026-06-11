@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, signal } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable, tap } from 'rxjs';
 import { environment } from '../../../../environments/environment';
@@ -10,6 +10,9 @@ import { Usuario, LoginResponse } from '../../models/usuario.model';
 export class AuthService {
   // URL base apuntando dinámicamente al backend según el entorno
   private readonly URL_API = `${environment.apiUrl}/auth`;
+
+  // Signal reactivo para el usuario autenticado
+  readonly usuarioActual = signal<Usuario | null>(this.obtenerUsuarioActual());
 
   constructor(private http: HttpClient) {}
 
@@ -23,6 +26,8 @@ export class AuthService {
           sessionStorage.setItem('zyra_token', respuesta.access_token);
           // Guardamos también los datos del perfil para usarlos en el diseño visual más adelante
           sessionStorage.setItem('zyra_usuario', JSON.stringify(respuesta.usuario));
+          // Actualizamos la señal reactiva
+          this.usuarioActual.set(respuesta.usuario);
         }
       })
     );
@@ -85,5 +90,6 @@ export class AuthService {
   private limpiarSesionLocal(): void {
     sessionStorage.removeItem('zyra_token');
     sessionStorage.removeItem('zyra_usuario');
+    this.usuarioActual.set(null);
   }
 }

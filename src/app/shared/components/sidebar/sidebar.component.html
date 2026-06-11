@@ -1,0 +1,63 @@
+<!-- Overlay para dispositivos móviles cuando el sidebar está abierto -->
+<div 
+  *ngIf="isOpen()" 
+  class="fixed inset-0 z-40 bg-slate-900/60 backdrop-blur-xs transition-opacity lg:hidden"
+  (click)="onItemClick()">
+</div>
+
+<!-- Contenedor del Sidebar -->
+<aside 
+  [class.translate-x-0]="isOpen()" 
+  [class.-translate-x-full]="!isOpen()"
+  class="fixed top-0 bottom-0 left-0 z-50 flex flex-col w-64 h-screen bg-slate-900 border-r border-slate-800 text-slate-300 transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:flex">
+  
+  <!-- Header del Sidebar con el Logo de la Empresa -->
+  <div class="flex items-center justify-between px-6 py-5 border-b border-slate-800">
+    <div class="flex items-center space-x-3">
+      <!-- Icono decorativo de Zyra con degradado naranja-amarillo -->
+      <div class="flex items-center justify-center w-9 h-9 rounded-lg bg-linear-to-tr from-orange-600 to-amber-500 shadow-md shadow-orange-500/20 text-white font-bold text-lg">
+        Z
+      </div>
+      <div>
+        <h1 class="text-lg font-bold tracking-wider text-white">Zyra BPO</h1>
+        <span class="text-xs text-slate-500 font-medium">Sistema de Operaciones</span>
+      </div>
+    </div>
+    
+    <!-- Botón para cerrar en móvil -->
+    <button 
+      (click)="onItemClick()" 
+      class="p-1 rounded-md hover:bg-slate-800 lg:hidden text-slate-400 hover:text-white focus:outline-hidden">
+      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+      </svg>
+    </button>
+  </div>
+
+  <!-- Enlaces de navegación -->
+  <nav class="flex-1 px-4 py-6 space-y-1.5 overflow-y-auto">
+    <a 
+      *ngFor="let item of menuItems" 
+      [routerLink]="item.route"
+      routerLinkActive="bg-slate-800/80 text-orange-500 border-l-4 border-orange-500 pl-3!"
+      [routerLinkActiveOptions]="{ exact: item.route === '/dashboard/inicio' }"
+      (click)="onItemClick()"
+      class="flex items-center px-4 py-3 rounded-lg font-medium text-slate-400 border-l-4 border-transparent hover:bg-slate-800/50 hover:text-white transition-all duration-150">
+      
+      <!-- Icono inyectado en crudo -->
+      <span class="mr-3" [innerHTML]="item.iconSvg"></span>
+      <span>{{ item.label }}</span>
+    </a>
+  </nav>
+
+  <!-- Footer del Sidebar -->
+  <div class="p-4 border-t border-slate-800 bg-slate-950/40">
+    <div class="flex items-center justify-between text-xs text-slate-500">
+      <span>Versión 1.0.0</span>
+      <span class="flex h-2 w-2 relative">
+        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+        <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+      </span>
+    </div>
+  </div>
+</aside>

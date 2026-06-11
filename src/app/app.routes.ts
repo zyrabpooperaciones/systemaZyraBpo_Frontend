@@ -16,7 +16,34 @@ export const routes: Routes = [
     path: 'dashboard',
     loadComponent: () => import('./features/dashboard/dashboard.component').then(m => m.DashboardComponent),
     // REGLA DE SEGURIDAD: El guardia bloquea esta pantalla si sessionStorage está vacío
-    canActivate: [authGuard]
+    canActivate: [authGuard],
+    children: [
+      {
+        path: 'inicio',
+        loadComponent: () => import('./features/dashboard/inicio/inicio.component').then(m => m.InicioComponent)
+      },
+      {
+        path: 'usuarios',
+        loadComponent: () => import('./features/dashboard/usuarios/usuarios.component').then(m => m.UsuariosComponent)
+      },
+      {
+        path: 'roles',
+        loadComponent: () => import('./features/dashboard/roles/roles.component').then(m => m.RolesComponent)
+      },
+      {
+        path: 'volcados',
+        loadComponent: () => import('./features/dashboard/volcados/volcados.component').then(m => m.VolcadosComponent)
+      },
+      {
+        path: 'perfil',
+        loadComponent: () => import('./features/dashboard/perfil/perfil.component').then(m => m.PerfilComponent)
+      },
+      {
+        path: '',
+        redirectTo: 'inicio',
+        pathMatch: 'full'
+      }
+    ]
   },
   // Redirección por defecto: si entran a la raíz, los mandamos directo al Login
   {

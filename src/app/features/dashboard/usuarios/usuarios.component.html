@@ -1,0 +1,87 @@
+<div class="space-y-6 animate-in fade-in duration-300">
+  <!-- Cabecera del Módulo -->
+  <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+    <div>
+      <h2 class="text-xl md:text-2xl font-bold text-slate-800 tracking-tight">Gestionar Usuarios</h2>
+      <p class="text-slate-500 text-xs md:text-sm mt-0.5">Controla las credenciales de acceso, roles y estados de los operadores de la empresa.</p>
+    </div>
+    
+    <button class="inline-flex items-center px-4 py-2.5 bg-orange-500 hover:bg-orange-600 text-white font-semibold text-sm rounded-xl shadow-md shadow-orange-500/15 transition-colors duration-150 cursor-pointer">
+      <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+      </svg>
+      Nuevo Usuario
+    </button>
+  </div>
+
+  <!-- Alerta informativa del estado de la fase -->
+  <div class="p-4 bg-orange-50/60 border border-orange-200/80 rounded-2xl flex items-start space-x-3 text-orange-800">
+    <svg class="w-5 h-5 text-orange-500 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+    </svg>
+    <div class="text-xs md:text-sm">
+      <span class="font-bold">Nota de Desarrollo:</span> Los datos que ves a continuación son una simulación de diseño (Mock). La base de datos y la creación real de registros se conectará en la <strong>Fase 4: Definición de Sub-Módulos Operativos</strong>.
+    </div>
+  </div>
+
+  <!-- Tabla de Usuarios (Mock) -->
+  <div class="bg-white border border-slate-200/85 rounded-2xl shadow-xs overflow-hidden">
+    <!-- Filtros Rápidos -->
+    <div class="p-4 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 bg-slate-50/40">
+      <div class="relative flex-1 max-w-xs">
+        <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+          </svg>
+        </span>
+        <input 
+          type="text" 
+          placeholder="Buscar usuario..." 
+          disabled
+          class="w-full pl-9 pr-4 py-2 border border-slate-200 rounded-xl text-sm bg-white text-slate-400 cursor-not-allowed">
+      </div>
+    </div>
+
+    <!-- Tabla Responsiva -->
+    <div class="overflow-x-auto">
+      <table class="w-full text-left border-collapse">
+        <thead>
+          <tr class="bg-slate-50/70 text-slate-500 text-xs font-semibold uppercase tracking-wider border-b border-slate-100">
+            <th class="px-6 py-4">Usuario</th>
+            <th class="px-6 py-4">Email</th>
+            <th class="px-6 py-4">Rol / Cargo</th>
+            <th class="px-6 py-4">Estado</th>
+            <th class="px-6 py-4 text-right">Acciones</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100 text-slate-700 text-sm">
+          <tr *ngFor="let u of usuarios" class="hover:bg-slate-50/50 transition-colors">
+            <td class="px-6 py-4 font-semibold text-slate-900">{{ u.nombre }}</td>
+            <td class="px-6 py-4 text-slate-500">{{ u.email }}</td>
+            <td class="px-6 py-4">
+              <div class="flex flex-col">
+                <span class="font-medium text-slate-800">{{ u.rol }}</span>
+                <span class="text-xs text-slate-400 capitalize">{{ u.cargo }}</span>
+              </div>
+            </td>
+            <td class="px-6 py-4">
+              <span 
+                [class]="u.estado === 'activo' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-rose-50 text-rose-700 border-rose-200'"
+                class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold border">
+                {{ u.estado }}
+              </span>
+            </td>
+            <td class="px-6 py-4 text-right space-x-2">
+              <button class="text-slate-400 hover:text-orange-500 p-1 rounded-lg hover:bg-slate-100 transition-colors cursor-not-allowed" disabled>
+                Editar
+              </button>
+              <button class="text-slate-400 hover:text-red-500 p-1 rounded-lg hover:bg-slate-100 transition-colors cursor-not-allowed" disabled>
+                Eliminar
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,86 @@
+<div class="space-y-6 animate-in fade-in duration-300">
+  <!-- Cabecera del Módulo -->
+  <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+    <div>
+      <h2 class="text-xl md:text-2xl font-bold text-slate-800 tracking-tight">Generar Volcados (Backups)</h2>
+      <p class="text-slate-500 text-xs md:text-sm mt-0.5">Administra las copias de seguridad de la base de datos PostgreSQL 17 y exporta volcados locales.</p>
+    </div>
+    
+    <button class="inline-flex items-center px-4 py-2.5 bg-orange-500 hover:bg-orange-600 text-white font-semibold text-sm rounded-xl shadow-md shadow-orange-500/15 transition-colors duration-150 cursor-pointer">
+      <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121 12h-4.5"/>
+      </svg>
+      Respaldar Ahora (pg_dump)
+    </button>
+  </div>
+
+  <!-- Alerta informativa -->
+  <div class="p-4 bg-orange-50/60 border border-orange-200/80 rounded-2xl flex items-start space-x-3 text-orange-800">
+    <svg class="w-5 h-5 text-orange-500 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+    </svg>
+    <div class="text-xs md:text-sm">
+      <span class="font-bold">Nota de Desarrollo:</span> Este módulo activará comandos de volcado en caliente (`pg_dump`) en el servidor PostgreSQL 17. En la siguiente fase conectaremos este botón a los scripts del backend FastAPI.
+    </div>
+  </div>
+
+  <!-- Tabla de Volcados Históricos -->
+  <div class="bg-white border border-slate-200/85 rounded-2xl shadow-xs overflow-hidden">
+    <div class="p-4 border-b border-slate-100 bg-slate-50/40">
+      <h3 class="text-sm font-bold text-slate-800 tracking-tight">Historial de Copias de Seguridad</h3>
+    </div>
+
+    <!-- Tabla Responsiva -->
+    <div class="overflow-x-auto">
+      <table class="w-full text-left border-collapse">
+        <thead>
+          <tr class="bg-slate-50/70 text-slate-500 text-xs font-semibold uppercase tracking-wider border-b border-slate-100">
+            <th class="px-6 py-4">ID de Volcado</th>
+            <th class="px-6 py-4">Fecha y Hora</th>
+            <th class="px-6 py-4">Tamaño</th>
+            <th class="px-6 py-4">Tipo</th>
+            <th class="px-6 py-4">Generado Por</th>
+            <th class="px-6 py-4">Estado</th>
+            <th class="px-6 py-4 text-right">Acción</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100 text-slate-700 text-sm">
+          <tr *ngFor="let v of volcados" class="hover:bg-slate-50/50 transition-colors">
+            <td class="px-6 py-4 font-mono text-xs font-bold text-slate-900">{{ v.id }}</td>
+            <td class="px-6 py-4 text-slate-500 text-xs">{{ v.fecha }}</td>
+            <td class="px-6 py-4 text-slate-600 font-medium">{{ v.tamano }}</td>
+            <td class="px-6 py-4">
+              <span 
+                [class]="v.tipo === 'manual' ? 'text-amber-700 bg-amber-50 border-amber-100' : 'text-slate-600 bg-slate-100 border-slate-200'"
+                class="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-semibold border capitalize">
+                {{ v.tipo }}
+              </span>
+            </td>
+            <td class="px-6 py-4 text-slate-600">{{ v.generadoPor }}</td>
+            <td class="px-6 py-4">
+              <span 
+                [class]="v.estado === 'completado' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : (v.estado === 'procesando' ? 'bg-blue-50 text-blue-700 border-blue-200 animate-pulse' : 'bg-rose-50 text-rose-700 border-rose-200')"
+                class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold border capitalize">
+                {{ v.estado }}
+              </span>
+            </td>
+            <td class="px-6 py-4 text-right">
+              <button 
+                [disabled]="v.estado !== 'completado'"
+                [class.cursor-not-allowed]="v.estado !== 'completado'"
+                [class.text-slate-300]="v.estado !== 'completado'"
+                [class.text-orange-500]="v.estado === 'completado'"
+                [class.hover:text-orange-600]="v.estado === 'completado'"
+                class="inline-flex items-center text-xs font-bold transition-colors cursor-pointer">
+                <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                </svg>
+                Descargar SQL
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,106 @@
+<div class="space-y-8 animate-in fade-in duration-300">
+  
+  <!-- Banner de Bienvenida -->
+  <div class="relative overflow-hidden rounded-2xl bg-linear-to-r from-slate-900 to-blue-950 p-6 md:p-8 text-white shadow-md">
+    <!-- Decoración geométrica de fondo en color naranja -->
+    <div class="absolute right-0 top-0 -mt-12 -mr-12 w-64 h-64 rounded-full bg-orange-500/10 blur-3xl"></div>
+    <div class="absolute right-24 bottom-0 -mb-24 w-64 h-64 rounded-full bg-blue-500/10 blur-3xl"></div>
+
+    <div class="relative z-10 space-y-4 max-w-2xl">
+      <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-orange-500/20 text-orange-400 border border-orange-500/30">
+        Sesión Operacional Activa
+      </span>
+      <h2 class="text-2xl md:text-4xl font-extrabold tracking-tight">
+        {{ getSaludo() }}, <span class="text-transparent bg-clip-text bg-linear-to-r from-orange-400 to-amber-300">{{ usuarioActual()?.nombre_completo || 'Usuario Zyra' }}</span>
+      </h2>
+      <p class="text-slate-300 text-sm md:text-base font-medium leading-relaxed">
+        Te damos la bienvenida al portal operativo de Zyra BPO. Desde aquí puedes administrar usuarios, gestionar roles jerárquicos y controlar los volcados de base de datos de manera centralizada.
+      </p>
+      <div class="flex flex-wrap gap-3 pt-2">
+        <div class="flex items-center space-x-2 text-xs text-slate-300 bg-white/5 px-3 py-1.5 rounded-lg border border-white/10">
+          <span class="font-bold text-orange-400">Cargo:</span>
+          <span class="capitalize">{{ usuarioActual()?.cargo || 'Sin cargo asignado' }}</span>
+        </div>
+        <div class="flex items-center space-x-2 text-xs text-slate-300 bg-white/5 px-3 py-1.5 rounded-lg border border-white/10">
+          <span class="font-bold text-orange-400">Rol:</span>
+          <span class="capitalize">{{ usuarioActual()?.rol || 'Sin rol' }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Estadísticas Rápidas (Mock) -->
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+    <!-- Tarjeta Usuarios -->
+    <div class="flex items-center p-6 bg-white border border-slate-200/80 rounded-2xl shadow-xs hover:shadow-md transition-shadow">
+      <div class="p-3 bg-blue-50 rounded-xl text-blue-600 mr-4">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
+        </svg>
+      </div>
+      <div>
+        <p class="text-2xl font-extrabold text-slate-900">12</p>
+        <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Usuarios Activos</p>
+      </div>
+    </div>
+
+    <!-- Tarjeta Roles -->
+    <div class="flex items-center p-6 bg-white border border-slate-200/80 rounded-2xl shadow-xs hover:shadow-md transition-shadow">
+      <div class="p-3 bg-orange-50 rounded-xl text-orange-600 mr-4">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+        </svg>
+      </div>
+      <div>
+        <p class="text-2xl font-extrabold text-slate-900">4</p>
+        <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Roles Configurados</p>
+      </div>
+    </div>
+
+    <!-- Tarjeta Volcados -->
+    <div class="flex items-center p-6 bg-white border border-slate-200/80 rounded-2xl shadow-xs hover:shadow-md transition-shadow sm:col-span-2 lg:col-span-1">
+      <div class="p-3 bg-emerald-50 rounded-xl text-emerald-600 mr-4">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"/>
+        </svg>
+      </div>
+      <div>
+        <p class="text-2xl font-extrabold text-slate-900">Ayer, 23:59</p>
+        <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Último Volcado</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Sección de Módulos (Acceso Directo) -->
+  <div class="space-y-4">
+    <h3 class="text-lg font-bold text-slate-800 tracking-tight">Accesos Directos a Módulos</h3>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div 
+        *ngFor="let item of tarjetasModulos"
+        class="group relative flex flex-col justify-between p-6 bg-white border border-slate-200/80 rounded-2xl shadow-xs hover:shadow-lg transition-all duration-200">
+        
+        <div class="space-y-4">
+          <!-- Icono flotante con degradado específico -->
+          <div class="flex items-center justify-center w-12 h-12 rounded-xl bg-linear-to-tr shadow-xs text-white" [class]="item.colorClase">
+            <span [innerHTML]="item.iconSvg"></span>
+          </div>
+          <div>
+            <h4 class="text-base font-bold text-slate-800 group-hover:text-orange-500 transition-colors">{{ item.titulo }}</h4>
+            <p class="text-slate-500 text-sm mt-1.5 leading-relaxed">{{ item.descripcion }}</p>
+          </div>
+        </div>
+
+        <div class="pt-6 mt-auto">
+          <a 
+            [routerLink]="item.link"
+            class="inline-flex items-center text-sm font-semibold text-slate-900 hover:text-orange-500 transition-colors">
+            <span>Ingresar</span>
+            <svg class="w-4 h-4 ml-1.5 transform group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+            </svg>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

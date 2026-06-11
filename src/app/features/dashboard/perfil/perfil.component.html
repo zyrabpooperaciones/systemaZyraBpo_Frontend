@@ -1,0 +1,159 @@
+<div class="space-y-8 animate-in fade-in duration-300">
+  <!-- Cabecera del Módulo -->
+  <div>
+    <h2 class="text-xl md:text-2xl font-bold text-slate-800 tracking-tight">Mi Perfil</h2>
+    <p class="text-slate-500 text-xs md:text-sm mt-0.5">Administra tu información personal y la seguridad de tu cuenta.</p>
+  </div>
+
+  <!-- Vista Principal en Grid (Tarjeta de Presentación + Formularios) -->
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+    
+    <!-- Columna Izquierda: Tarjeta de Presentación Corporativa -->
+    <div class="bg-white border border-slate-200/80 rounded-2xl p-6 shadow-xs flex flex-col items-center text-center space-y-6">
+      
+      <!-- Avatar con degradado y sombra sutil -->
+      <div class="relative flex items-center justify-center w-24 h-24 rounded-full bg-linear-to-tr from-orange-500 to-amber-500 text-white font-extrabold text-3xl shadow-lg shadow-orange-500/25 border-4 border-white">
+        {{ getIniciales() }}
+      </div>
+
+      <!-- Datos Principales -->
+      <div>
+        <h3 class="text-lg font-bold text-slate-900">{{ usuarioActual()?.nombre_completo || 'Usuario Zyra' }}</h3>
+        <p class="text-xs font-bold text-orange-500 uppercase tracking-widest mt-1">{{ usuarioActual()?.cargo || 'Especialista BPO' }}</p>
+        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-100 mt-3 capitalize">
+          Rol: {{ usuarioActual()?.rol || 'Operaciones' }}
+        </span>
+      </div>
+
+      <!-- Detalle Rápido -->
+      <div class="w-full pt-6 border-t border-slate-100 text-left space-y-4 text-sm">
+        <div class="flex items-center space-x-3 text-slate-600">
+          <svg class="w-5 h-5 text-slate-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+          </svg>
+          <span class="truncate">{{ usuarioActual()?.email || 'sin-correo@zyrabpo.com' }}</span>
+        </div>
+        <div class="flex items-center space-x-3 text-slate-600">
+          <svg class="w-5 h-5 text-slate-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+          </svg>
+          <span>Sesión de Seguridad Válida</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Columna Derecha: Formularios de Edición y Seguridad -->
+    <div class="lg:col-span-2 space-y-8">
+      
+      <!-- Bloque 1: Datos Personales -->
+      <div class="bg-white border border-slate-200/80 rounded-2xl p-6 shadow-xs space-y-6">
+        <h4 class="text-base font-bold text-slate-800 tracking-tight border-b border-slate-100 pb-3">Información Personal</h4>
+        
+        <form (ngSubmit)="guardarPerfil()" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <!-- Campo Nombre -->
+          <div class="space-y-1.5">
+            <label class="text-xs font-bold text-slate-500 uppercase tracking-wider">Nombre Completo</label>
+            <input 
+              type="text" 
+              name="nombre"
+              [ngModel]="nombre()"
+              (ngModelChange)="nombre.set($event)"
+              class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-hidden focus:border-orange-500 focus:ring-1 focus:ring-orange-500 text-slate-800 transition-colors">
+          </div>
+
+          <!-- Campo Correo -->
+          <div class="space-y-1.5">
+            <label class="text-xs font-bold text-slate-500 uppercase tracking-wider">Correo Electrónico</label>
+            <input 
+              type="email" 
+              name="email"
+              [ngModel]="email()"
+              (ngModelChange)="email.set($event)"
+              class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-hidden focus:border-orange-500 focus:ring-1 focus:ring-orange-500 text-slate-800 transition-colors">
+          </div>
+
+          <!-- Campo Rol (Lectura) -->
+          <div class="space-y-1.5">
+            <label class="text-xs font-bold text-slate-400 uppercase tracking-wider">Rol de Sistema (Solo Lectura)</label>
+            <input 
+              type="text" 
+              [value]="usuarioActual()?.rol" 
+              disabled 
+              class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm bg-slate-50 text-slate-400 cursor-not-allowed capitalize">
+          </div>
+
+          <!-- Campo Cargo (Lectura) -->
+          <div class="space-y-1.5">
+            <label class="text-xs font-bold text-slate-400 uppercase tracking-wider">Cargo Interno (Solo Lectura)</label>
+            <input 
+              type="text" 
+              [value]="usuarioActual()?.cargo" 
+              disabled 
+              class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm bg-slate-50 text-slate-400 cursor-not-allowed capitalize">
+          </div>
+
+          <!-- Botón Guardar Cambios -->
+          <div class="md:col-span-2 flex justify-end">
+            <button 
+              type="submit"
+              class="px-5 py-2.5 bg-orange-500 hover:bg-orange-600 text-white font-semibold text-sm rounded-xl shadow-md shadow-orange-500/10 transition-colors duration-150 cursor-pointer">
+              Guardar Cambios
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Bloque 2: Cambio de Contraseña -->
+      <div class="bg-white border border-slate-200/80 rounded-2xl p-6 shadow-xs space-y-6">
+        <h4 class="text-base font-bold text-slate-800 tracking-tight border-b border-slate-100 pb-3">Seguridad de la Cuenta</h4>
+        
+        <form (ngSubmit)="guardarPassword()" class="space-y-6">
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <!-- Contraseña Actual -->
+            <div class="space-y-1.5">
+              <label class="text-xs font-bold text-slate-500 uppercase tracking-wider">Contraseña Actual</label>
+              <input 
+                type="password" 
+                name="passwordActual"
+                [ngModel]="passwordActual()"
+                (ngModelChange)="passwordActual.set($event)"
+                class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-hidden focus:border-orange-500 focus:ring-1 focus:ring-orange-500 text-slate-800 transition-colors">
+            </div>
+
+            <!-- Nueva Contraseña -->
+            <div class="space-y-1.5">
+              <label class="text-xs font-bold text-slate-500 uppercase tracking-wider">Nueva Contraseña</label>
+              <input 
+                type="password" 
+                name="nuevaPassword"
+                [ngModel]="nuevaPassword()"
+                (ngModelChange)="nuevaPassword.set($event)"
+                class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-hidden focus:border-orange-500 focus:ring-1 focus:ring-orange-500 text-slate-800 transition-colors">
+            </div>
+
+            <!-- Confirmar Contraseña -->
+            <div class="space-y-1.5">
+              <label class="text-xs font-bold text-slate-500 uppercase tracking-wider">Confirmar Contraseña</label>
+              <input 
+                type="password" 
+                name="confirmarPassword"
+                [ngModel]="confirmarPassword()"
+                (ngModelChange)="confirmarPassword.set($event)"
+                class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-hidden focus:border-orange-500 focus:ring-1 focus:ring-orange-500 text-slate-800 transition-colors">
+            </div>
+          </div>
+
+          <!-- Botón Actualizar Contraseña -->
+          <div class="flex justify-end">
+            <button 
+              type="submit"
+              class="px-5 py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-semibold text-sm rounded-xl shadow-xs transition-colors duration-150 cursor-pointer">
+              Actualizar Contraseña
+            </button>
+          </div>
+        </form>
+      </div>
+
+    </div>
+  </div>
+</div>
