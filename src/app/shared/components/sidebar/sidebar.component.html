@@ -37,7 +37,7 @@
   <!-- Enlaces de navegación -->
   <nav class="flex-1 px-4 py-6 space-y-1.5 overflow-y-auto">
     <a 
-      *ngFor="let item of menuItems" 
+      *ngFor="let item of menuFiltrado" 
       [routerLink]="item.route"
       routerLinkActive="bg-slate-800/80 text-orange-500 border-l-4 border-orange-500 pl-3!"
       [routerLinkActiveOptions]="{ exact: item.route === '/dashboard/inicio' }"

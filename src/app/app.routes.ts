@@ -17,6 +17,7 @@ export const routes: Routes = [
     loadComponent: () => import('./features/dashboard/dashboard.component').then(m => m.DashboardComponent),
     // REGLA DE SEGURIDAD: El guardia bloquea esta pantalla si sessionStorage está vacío
     canActivate: [authGuard],
+    canActivateChild: [authGuard],
     children: [
       {
         path: 'inicio',

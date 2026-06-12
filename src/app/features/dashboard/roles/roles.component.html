@@ -6,7 +6,10 @@
       <p class="text-slate-500 text-xs md:text-sm mt-0.5">Define las plantillas de roles jerárquicos y sus respectivas políticas de acceso.</p>
     </div>
     
-    <button class="inline-flex items-center px-4 py-2.5 bg-orange-500 hover:bg-orange-600 text-white font-semibold text-sm rounded-xl shadow-md shadow-orange-500/15 transition-colors duration-150 cursor-pointer">
+    <button 
+      *ngIf="authService.tienePermiso('roles', 2)"
+      (click)="abrirModalCrear()"
+      class="inline-flex items-center px-4 py-2.5 bg-orange-500 hover:bg-orange-600 text-white font-semibold text-sm rounded-xl shadow-md shadow-orange-500/15 transition-colors duration-150 cursor-pointer">
       <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
       </svg>
@@ -14,18 +17,14 @@
     </button>
   </div>
 
-  <!-- Alerta informativa del estado de la fase -->
-  <div class="p-4 bg-orange-50/60 border border-orange-200/80 rounded-2xl flex items-start space-x-3 text-orange-800">
-    <svg class="w-5 h-5 text-orange-500 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-    </svg>
-    <div class="text-xs md:text-sm">
-      <span class="font-bold">Nota de Desarrollo:</span> Al igual que el catálogo de usuarios, la creación y edición de roles y su asociación a permisos dinámicos se implementará por completo en la siguiente fase de desarrollo.
-    </div>
+  <!-- Loading State -->
+  <div *ngIf="cargando && roles.length === 0" class="flex flex-col items-center justify-center py-12 space-y-3">
+    <div class="w-10 h-10 border-4 border-orange-500 border-t-transparent rounded-full animate-spin"></div>
+    <span class="text-slate-500 text-sm">Cargando roles del sistema...</span>
   </div>
 
-  <!-- Grid de Roles (Mock) -->
-  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+  <!-- Grid de Roles -->
+  <div *ngIf="!cargando || roles.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
     <div 
       *ngFor="let rol of roles" 
       class="bg-white border border-slate-200/85 rounded-2xl p-6 shadow-xs flex flex-col justify-between hover:shadow-md transition-shadow">
@@ -34,34 +33,155 @@
         <!-- Badge y Título del Rol -->
         <div class="flex items-center justify-between">
           <h3 class="text-lg font-bold text-slate-900">{{ rol.nombre }}</h3>
-          <span class="px-2.5 py-1 rounded-lg bg-blue-50 text-blue-700 text-xs font-bold border border-blue-100">
-            {{ rol.usuariosAsignados }} {{ rol.usuariosAsignados === 1 ? 'Usuario' : 'Usuarios' }}
+          <span class="px-2.5 py-1 rounded-lg bg-orange-50 text-orange-700 text-xs font-bold border border-orange-100">
+            {{ obtenerConteoUsuarios(rol.id) }} {{ obtenerConteoUsuarios(rol.id) === 1 ? 'Usuario' : 'Usuarios' }}
           </span>
         </div>
 
         <!-- Descripción -->
         <p class="text-slate-500 text-sm leading-relaxed">{{ rol.descripcion }}</p>
-
-        <!-- Permisos -->
-        <div class="space-y-2">
-          <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Permisos Asignados</p>
-          <div class="flex flex-wrap gap-1.5">
-            <span 
-              *ngFor="let p of rol.permisos" 
-              class="px-2 py-0.5 bg-slate-50 text-slate-600 rounded-md text-xs font-semibold border border-slate-100">
-              {{ p }}
-            </span>
-          </div>
-        </div>
       </div>
 
-      <!-- Acciones de Roles (Deshabilitadas en esta fase) -->
+      <!-- Acciones de Roles -->
       <div class="pt-6 mt-6 border-t border-slate-100 flex justify-end space-x-2">
-        <button class="text-slate-400 hover:text-orange-500 px-3 py-1.5 rounded-lg hover:bg-slate-50 transition-colors text-xs font-semibold cursor-not-allowed" disabled>
-          Configurar
+        <button 
+          *ngIf="authService.tienePermiso('roles', 3)"
+          (click)="abrirModalEditar(rol)"
+          class="text-slate-600 hover:text-orange-500 px-3 py-1.5 rounded-lg hover:bg-slate-50 transition-colors text-xs font-semibold cursor-pointer">
+          Editar
         </button>
-        <button class="text-slate-400 hover:text-red-500 px-3 py-1.5 rounded-lg hover:bg-slate-50 transition-colors text-xs font-semibold cursor-not-allowed" disabled>
+        <button 
+          (click)="abrirModalConfigurar(rol)"
+          class="text-slate-600 hover:text-orange-500 px-3 py-1.5 rounded-lg hover:bg-slate-50 transition-colors text-xs font-semibold cursor-pointer">
+          {{ authService.tienePermiso('roles', 3) ? 'Configurar' : 'Ver Permisos' }}
+        </button>
+        <button 
+          *ngIf="authService.tienePermiso('roles', 3)"
+          (click)="eliminarRol(rol.id)"
+          class="text-slate-600 hover:text-red-500 px-3 py-1.5 rounded-lg hover:bg-slate-50 transition-colors text-xs font-semibold cursor-pointer">
           Eliminar
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Crear/Editar Rol -->
+  <div *ngIf="modalRolAbierto" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-xs p-4 overflow-y-auto">
+    <div class="relative bg-white border border-slate-200/80 rounded-2xl w-full max-w-md p-6 shadow-xl animate-in fade-in zoom-in-95 duration-200">
+      <div class="flex justify-between items-center border-b border-slate-100 pb-3 mb-4">
+        <h3 class="text-lg font-bold text-slate-900">{{ modoEdicion ? 'Editar Rol' : 'Nuevo Rol' }}</h3>
+        <button (click)="cerrarModales()" class="text-slate-400 hover:text-slate-600 cursor-pointer">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        </button>
+      </div>
+      
+      <form (ngSubmit)="guardarRol()" class="space-y-4">
+        <div class="space-y-1.5">
+          <label class="text-xs font-bold text-slate-500 uppercase tracking-wider">Nombre del Rol</label>
+          <input 
+            type="text" 
+            name="nombreRol"
+            [(ngModel)]="nombreRol"
+            required
+            placeholder="Ej: Agente de Soporte"
+            class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-hidden focus:border-orange-500 focus:ring-1 focus:ring-orange-500 text-slate-800 transition-colors">
+        </div>
+        
+        <div class="space-y-1.5">
+          <label class="text-xs font-bold text-slate-500 uppercase tracking-wider">Descripción</label>
+          <textarea 
+            name="descripcionRol"
+            [(ngModel)]="descripcionRol"
+            required
+            rows="3"
+            placeholder="Describa el rol y sus funciones..."
+            class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-hidden focus:border-orange-500 focus:ring-1 focus:ring-orange-500 text-slate-800 transition-colors"></textarea>
+        </div>
+        
+        <div class="flex justify-end space-x-3 pt-2">
+          <button 
+            type="button" 
+            (click)="cerrarModales()" 
+            class="px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-sm rounded-xl transition-colors cursor-pointer">
+            Cancelar
+          </button>
+          <button 
+            type="submit" 
+            [disabled]="cargando"
+            class="px-5 py-2.5 bg-orange-500 hover:bg-orange-600 text-white font-semibold text-sm rounded-xl shadow-md shadow-orange-500/10 transition-colors duration-150 cursor-pointer disabled:opacity-50">
+            {{ modoEdicion ? 'Guardar Cambios' : 'Crear Rol' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal Configurar Permisos -->
+  <div *ngIf="modalPermisosAbierto" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-xs p-4 overflow-y-auto">
+    <div class="relative bg-white border border-slate-200/80 rounded-2xl w-full max-w-2xl p-6 shadow-xl animate-in fade-in zoom-in-95 duration-200">
+      <div class="flex justify-between items-center border-b border-slate-100 pb-3 mb-4">
+        <div>
+          <h3 class="text-lg font-bold text-slate-900">Configurar Permisos</h3>
+          <p class="text-slate-500 text-xs mt-0.5">Defina los niveles de acceso para el rol <span class="font-bold text-slate-800">{{ rolSeleccionado?.nombre }}</span></p>
+        </div>
+        <button (click)="cerrarModales()" class="text-slate-400 hover:text-slate-600 cursor-pointer">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        </button>
+      </div>
+      
+      <div class="space-y-4 max-h-[60vh] overflow-y-auto pr-1">
+        <table class="w-full text-left border-collapse">
+          <thead>
+            <tr class="bg-slate-50/70 text-slate-500 text-xs font-semibold uppercase tracking-wider border-b border-slate-100">
+              <th class="px-4 py-3">Módulo</th>
+              <th class="px-4 py-3">Descripción</th>
+              <th class="px-4 py-3">Nivel de Acceso</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 text-slate-700 text-sm">
+            <tr *ngFor="let permiso of permisosRol" class="hover:bg-slate-50/50 transition-colors">
+              <td class="px-4 py-3 font-semibold text-slate-900">
+                {{ permiso.nombre_pantalla }}
+                <span class="block text-xs font-normal text-slate-400 font-mono">{{ permiso.nombre_interno }}</span>
+              </td>
+              <td class="px-4 py-3 text-xs text-slate-500">
+                Nivel asignado para la gestión de {{ permiso.nombre_pantalla | lowercase }}
+              </td>
+              <td class="px-4 py-3">
+                <select 
+                  [ngModel]="permiso.nivel_acceso"
+                  (ngModelChange)="cambiarNivelAcceso(permiso.modulo_id, $event)"
+                  [disabled]="!authService.tienePermiso('roles', 3)"
+                  class="px-3 py-1.5 border border-slate-200 rounded-lg text-sm bg-white focus:outline-hidden focus:border-orange-500 text-slate-800 disabled:bg-slate-50 disabled:text-slate-400 disabled:cursor-not-allowed">
+                  <option [ngValue]="0">0 - Sin Acceso</option>
+                  <option [ngValue]="1">1 - Lectura</option>
+                  <option [ngValue]="2">2 - Creación / Subida</option>
+                  <option [ngValue]="3">3 - Edición / Eliminación</option>
+                </select>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      
+      <div class="flex justify-end space-x-3 pt-4 border-t border-slate-100 mt-4">
+        <button 
+          type="button" 
+          (click)="cerrarModales()" 
+          class="px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-sm rounded-xl transition-colors cursor-pointer">
+          {{ authService.tienePermiso('roles', 3) ? 'Cancelar' : 'Cerrar' }}
+        </button>
+        <button 
+          *ngIf="authService.tienePermiso('roles', 3)"
+          type="button" 
+          (click)="guardarPermisos()" 
+          [disabled]="cargando"
+          class="px-5 py-2.5 bg-orange-500 hover:bg-orange-600 text-white font-semibold text-sm rounded-xl shadow-md shadow-orange-500/10 transition-colors duration-150 cursor-pointer disabled:opacity-50">
+          Guardar Permisos
         </button>
       </div>
     </div>

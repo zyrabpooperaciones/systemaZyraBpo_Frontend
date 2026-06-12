@@ -3,16 +3,27 @@ import { CanActivateFn, Router } from '@angular/router';
 import { AuthService } from '../../services/auth/auth.service';
 
 export const authGuard: CanActivateFn = (route, state) => {
-  // Inyectamos el servicio de autenticación y el enrutador de Angular
   const authService = inject(AuthService);
   const router = inject(Router);
 
-  // El guardia revisa si existe un token activo en la pestaña actual
   if (authService.estaAutenticado()) {
-    return true; // ¡Luz verde! El guardia abre la reja visual y permite ver la pantalla
+    // 1. Obtener el nombre del módulo desde la data de la ruta o desde el path
+    const modulo = route.data?.['modulo'] || route.routeConfig?.path;
+    
+    // 2. Rutas del dashboard que no requieren un permiso específico (públicas/generales)
+    const rutasPublicas = ['inicio', 'perfil', 'dashboard', ''];
+
+    // 3. Si el módulo requiere permisos, validar que el usuario tenga al menos nivel 1 (lectura)
+    if (modulo && !rutasPublicas.includes(modulo)) {
+      if (!authService.tienePermiso(modulo, 1)) {
+        router.navigate(['/dashboard/inicio']);
+        return false;
+      }
+    }
+
+    return true;
   }
 
-  // Si no está autenticado, lo redirigimos al Login de inmediato
   router.navigate(['/login']);
-  return false; // Cierra el acceso por completo
+  return false;
 };

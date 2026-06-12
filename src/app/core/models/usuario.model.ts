@@ -8,7 +8,13 @@ export interface Usuario {
   telefono?: string;
 }
 
+export interface PermisoInfo {
+  modulo: string;
+  nivel: number;
+}
+
 export interface LoginResponse {
   access_token: string;
   usuario: Usuario;
+  permisos: PermisoInfo[];
 }

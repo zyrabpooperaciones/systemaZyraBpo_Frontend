@@ -2,7 +2,7 @@ import { Injectable, signal } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable, tap } from 'rxjs';
 import { environment } from '../../../../environments/environment';
-import { Usuario, LoginResponse } from '../../models/usuario.model';
+import { Usuario, LoginResponse, PermisoInfo } from '../../models/usuario.model';
 
 @Injectable({
   providedIn: 'root'
@@ -26,6 +26,8 @@ export class AuthService {
           sessionStorage.setItem('zyra_token', respuesta.access_token);
           // Guardamos también los datos del perfil para usarlos en el diseño visual más adelante
           sessionStorage.setItem('zyra_usuario', JSON.stringify(respuesta.usuario));
+          // Guardamos la lista de permisos del usuario
+          sessionStorage.setItem('zyra_permisos', JSON.stringify(respuesta.permisos || []));
           // Actualizamos la señal reactiva
           this.usuarioActual.set(respuesta.usuario);
         }
@@ -107,10 +109,26 @@ export class AuthService {
     return this.http.post<any>(`${this.URL_API}/restablecer-password`, datos);
   }
 
+  /**
+   * Verifica si el usuario cuenta con un nivel de acceso minimo en un modulo especifico
+   */
+  tienePermiso(modulo: string, nivelRequerido: number = 1): boolean {
+    const permisosJson = sessionStorage.getItem('zyra_permisos');
+    if (!permisosJson) return false;
+    try {
+      const permisos = JSON.parse(permisosJson) as PermisoInfo[];
+      const permiso = permisos.find(p => p.modulo === modulo);
+      return permiso ? permiso.nivel >= nivelRequerido : false;
+    } catch {
+      return false;
+    }
+  }
+
   //Destruye el rastro local del token en el navegador
   private limpiarSesionLocal(): void {
     sessionStorage.removeItem('zyra_token');
     sessionStorage.removeItem('zyra_usuario');
+    sessionStorage.removeItem('zyra_permisos');
     this.usuarioActual.set(null);
   }
 }

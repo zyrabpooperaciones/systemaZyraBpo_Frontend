@@ -1,6 +1,7 @@
 import { Component, input, output } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { CommonModule } from '@angular/common';
+import { AuthService } from '../../../core/services/auth/auth.service';
 
 @Component({
   selector: 'app-sidebar',
@@ -10,10 +11,7 @@ import { CommonModule } from '@angular/common';
   styles: []
 })
 export class SidebarComponent {
-  // Recibe si el sidebar está abierto (para modo móvil)
   isOpen = input<boolean>(false);
-  
-  // Emite un evento para cerrar el sidebar en móviles al hacer click en una opción o fuera
   closeSidebar = output<void>();
 
   menuItems = [
@@ -38,6 +36,18 @@ export class SidebarComponent {
       iconSvg: `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"/></svg>`
     }
   ];
+
+  constructor(private authService: AuthService) {}
+
+  get menuFiltrado() {
+    return this.menuItems.filter(item => {
+      if (item.route === '/dashboard/inicio') return true;
+      if (item.route === '/dashboard/usuarios') return this.authService.tienePermiso('usuarios', 1);
+      if (item.route === '/dashboard/roles') return this.authService.tienePermiso('roles', 1);
+      if (item.route === '/dashboard/volcados') return this.authService.tienePermiso('volcados', 1);
+      return false;
+    });
+  }
 
   onItemClick() {
     this.closeSidebar.emit();
