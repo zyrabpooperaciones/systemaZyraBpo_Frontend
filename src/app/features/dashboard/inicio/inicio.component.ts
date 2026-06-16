@@ -1,7 +1,8 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { AuthService } from '../../../core/services/auth/auth.service';
+import { DomSanitizer } from '@angular/platform-browser';
 
 @Component({
   selector: 'app-inicio',
@@ -10,10 +11,12 @@ import { AuthService } from '../../../core/services/auth/auth.service';
   templateUrl: './inicio.component.html',
   styles: []
 })
-export class InicioComponent {
+export class InicioComponent implements OnInit {
   private authService = inject(AuthService);
+  private sanitizer = inject(DomSanitizer);
 
   usuarioActual = this.authService.usuarioActual;
+  tarjetasModulosSafe: any[] = [];
 
   tarjetasModulos = [
     {
@@ -38,6 +41,13 @@ export class InicioComponent {
       iconSvg: `<svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"/></svg>`
     }
   ];
+
+  ngOnInit() {
+    this.tarjetasModulosSafe = this.tarjetasModulos.map(item => ({
+      ...item,
+      iconSvgSafe: this.sanitizer.bypassSecurityTrustHtml(item.iconSvg)
+    }));
+  }
 
   // Obtiene un saludo amigable dependiendo de la hora actual
   getSaludo(): string {

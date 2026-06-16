@@ -72,13 +72,13 @@
     <h3 class="text-lg font-bold text-slate-800 tracking-tight">Accesos Directos a Módulos</h3>
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
       <div 
-        *ngFor="let item of tarjetasModulos"
+        *ngFor="let item of tarjetasModulosSafe"
         class="group relative flex flex-col justify-between p-6 bg-white border border-slate-200/80 rounded-2xl shadow-xs hover:shadow-lg transition-all duration-200">
         
         <div class="space-y-4">
           <!-- Icono flotante con degradado específico -->
           <div class="flex items-center justify-center w-12 h-12 rounded-xl bg-linear-to-tr shadow-xs text-white" [class]="item.colorClase">
-            <span [innerHTML]="item.iconSvg"></span>
+            <span [innerHTML]="item.iconSvgSafe"></span>
           </div>
           <div>
             <h4 class="text-base font-bold text-slate-800 group-hover:text-orange-500 transition-colors">{{ item.titulo }}</h4>

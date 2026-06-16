@@ -1,7 +1,8 @@
-import { Component, input, output } from '@angular/core';
+import { Component, input, output, inject, OnInit } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { AuthService } from '../../../core/services/auth/auth.service';
+import { DomSanitizer } from '@angular/platform-browser';
 
 @Component({
   selector: 'app-sidebar',
@@ -10,9 +11,10 @@ import { AuthService } from '../../../core/services/auth/auth.service';
   templateUrl: './sidebar.component.html',
   styles: []
 })
-export class SidebarComponent {
+export class SidebarComponent implements OnInit {
   isOpen = input<boolean>(false);
   closeSidebar = output<void>();
+  private sanitizer = inject(DomSanitizer);
 
   menuItems = [
     {
@@ -37,16 +39,21 @@ export class SidebarComponent {
     }
   ];
 
+  menuFiltrado: any[] = [];
+
   constructor(private authService: AuthService) {}
 
-  get menuFiltrado() {
-    return this.menuItems.filter(item => {
+  ngOnInit(): void {
+    this.menuFiltrado = this.menuItems.filter(item => {
       if (item.route === '/dashboard/inicio') return true;
       if (item.route === '/dashboard/usuarios') return this.authService.tienePermiso('usuarios', 1);
       if (item.route === '/dashboard/roles') return this.authService.tienePermiso('roles', 1);
       if (item.route === '/dashboard/volcados') return this.authService.tienePermiso('volcados', 1);
       return false;
-    });
+    }).map(item => ({
+      ...item,
+      iconSvgSafe: this.sanitizer.bypassSecurityTrustHtml(item.iconSvg)
+    }));
   }
 
   onItemClick() {

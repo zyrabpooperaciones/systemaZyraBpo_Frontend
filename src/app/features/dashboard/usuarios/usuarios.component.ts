@@ -61,14 +61,18 @@ export class UsuariosComponent implements OnInit {
       }
     });
 
-    this.rolesService.listarRoles().subscribe({
-      next: (roles: Rol[]) => {
-        this.roles = roles;
-      },
-      error: (err: any) => {
-        console.error('Error al cargar la lista de roles:', err);
-      }
-    });
+    if (this.authService.tienePermiso('roles', 1)) {
+      this.rolesService.listarRoles().subscribe({
+        next: (roles: Rol[]) => {
+          this.roles = roles;
+        },
+        error: (err: any) => {
+          console.error('Error al cargar la lista de roles:', err);
+        }
+      });
+    } else {
+      this.roles = [];
+    }
   }
 
   filtrarUsuarios(): void {

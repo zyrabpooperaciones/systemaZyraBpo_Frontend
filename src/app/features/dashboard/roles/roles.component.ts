@@ -74,23 +74,29 @@ export class RolesComponent implements OnInit {
   }
 
   calcularUsuariosPorRol(): void {
-    this.usuariosService.listarUsuarios().subscribe({
-      next: (usuarios: any[]) => {
-        const conteo: { [rolId: number]: number } = {};
-        this.roles.forEach(r => conteo[r.id] = 0);
-        
-        usuarios.forEach((u: any) => {
-          if (conteo[u.rol_id] !== undefined) {
-            conteo[u.rol_id]++;
-          }
-        });
-        
-        this.usuariosPorRol = conteo;
-      },
-      error: (err: any) => {
-        console.error('Error al cargar conteo de usuarios:', err);
-      }
-    });
+    if (this.authService.tienePermiso('usuarios', 1)) {
+      this.usuariosService.listarUsuarios().subscribe({
+        next: (usuarios: any[]) => {
+          const conteo: { [rolId: number]: number } = {};
+          this.roles.forEach(r => conteo[r.id] = 0);
+          
+          usuarios.forEach((u: any) => {
+            if (conteo[u.rol_id] !== undefined) {
+              conteo[u.rol_id]++;
+            }
+          });
+          
+          this.usuariosPorRol = conteo;
+        },
+        error: (err: any) => {
+          console.error('Error al cargar conteo de usuarios:', err);
+        }
+      });
+    } else {
+      const conteo: { [rolId: number]: number } = {};
+      this.roles.forEach(r => conteo[r.id] = 0);
+      this.usuariosPorRol = conteo;
+    }
   }
 
   obtenerConteoUsuarios(rolId: number): number {

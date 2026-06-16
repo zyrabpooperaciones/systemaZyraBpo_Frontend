@@ -45,7 +45,7 @@
       class="flex items-center px-4 py-3 rounded-lg font-medium text-slate-400 border-l-4 border-transparent hover:bg-slate-800/50 hover:text-white transition-all duration-150">
       
       <!-- Icono inyectado en crudo -->
-      <span class="mr-3" [innerHTML]="item.iconSvg"></span>
+      <span class="mr-3" [innerHTML]="item.iconSvgSafe"></span>
       <span>{{ item.label }}</span>
     </a>
   </nav>
