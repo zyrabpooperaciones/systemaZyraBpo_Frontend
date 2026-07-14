@@ -6,6 +6,8 @@ export interface Usuario {
   cargo: string;
   ci: string;
   telefono?: string;
+  rol_id?: number;
+  rol_nombre?: string;
 }
 
 export interface PermisoInfo {

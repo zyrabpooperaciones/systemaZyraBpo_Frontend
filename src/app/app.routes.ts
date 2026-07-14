@@ -36,6 +36,16 @@ export const routes: Routes = [
         loadComponent: () => import('./features/dashboard/volcados/volcados.component').then(m => m.VolcadosComponent)
       },
       {
+        path: 'tramos',
+        loadComponent: () => import('./features/dashboard/tramos/tramos.component').then(m => m.TramosComponent),
+        data: { modulo: 'configuracion_tramos' }
+      },
+      {
+        path: 'tramos/:id',
+        loadComponent: () => import('./features/dashboard/tramos/detalle/detalle-tramo.component').then(m => m.DetalleTramoComponent),
+        data: { modulo: 'configuracion_tramos' }
+      },
+      {
         path: 'perfil',
         loadComponent: () => import('./features/dashboard/perfil/perfil.component').then(m => m.PerfilComponent)
       },

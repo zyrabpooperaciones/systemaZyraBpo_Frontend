@@ -1,0 +1,536 @@
+<div class="space-y-6">
+  <!-- Cabecera y Navegación (Breadcrumbs) -->
+  <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 pb-4 border-b border-slate-100">
+    <div class="space-y-1">
+      <div class="flex items-center space-x-2 text-xs font-semibold text-slate-400">
+        <a routerLink="/dashboard/tramos" class="hover:text-slate-600 transition-colors">Tramos y Carteras</a>
+        <span>/</span>
+        <span class="text-slate-600 font-bold">{{ tramo?.nombre }}</span>
+        <span>/</span>
+        <span class="text-slate-800">Configuración</span>
+      </div>
+      <div class="flex items-center space-x-3">
+        <div class="w-10 h-10 rounded-lg flex items-center justify-center bg-slate-900 text-white font-bold text-base shadow-xs">
+          {{ tramo?.nombre }}
+        </div>
+        <h1 class="text-2xl font-bold tracking-tight text-slate-900">Cartera {{ tramo?.nombre }}</h1>
+      </div>
+    </div>
+
+    <!-- Botón Atrás -->
+    <a 
+      routerLink="/dashboard/tramos"
+      class="flex items-center space-x-2 self-start md:self-center px-4 py-2 bg-white hover:bg-slate-50 text-slate-700 font-semibold border border-slate-200 rounded-xl text-sm transition-all duration-150 shadow-xs">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+      </svg>
+      <span>Volver a Tramos</span>
+    </a>
+  </div>
+
+  <!-- Contenedor Principal / Spinner de Carga -->
+  <div *ngIf="cargando && !drawerMapeoAbierto" class="flex flex-col items-center justify-center py-20 space-y-4">
+    <div class="relative w-12 h-12">
+      <div class="absolute inset-0 rounded-full border-4 border-slate-200"></div>
+      <div class="absolute inset-0 rounded-full border-4 border-t-orange-500 animate-spin"></div>
+    </div>
+    <span class="text-sm text-slate-500 font-medium">Procesando solicitud...</span>
+  </div>
+
+  <!-- Contenido Dinámico -->
+  <div *ngIf="!cargando || drawerMapeoAbierto" class="space-y-6">
+    
+    <!-- Pestañas Principales (Tab Navigation) -->
+    <div class="border-b border-slate-200">
+      <nav class="-mb-px flex space-x-6">
+        <button 
+          (click)="pestanaActiva = 'catalogo'"
+          [class.border-slate-900]="pestanaActiva === 'catalogo'"
+          [class.text-slate-950]="pestanaActiva === 'catalogo'"
+          [class.font-bold]="pestanaActiva === 'catalogo'"
+          [class.border-transparent]="pestanaActiva !== 'catalogo'"
+          [class.text-slate-400]="pestanaActiva !== 'catalogo'"
+          class="pb-4 px-1 border-b-2 font-semibold text-sm transition-all duration-150">
+          Catálogo del Tramo (Inventario)
+        </button>
+        <button 
+          (click)="pestanaActiva = 'plantillas'"
+          [class.border-slate-900]="pestanaActiva === 'plantillas'"
+          [class.text-slate-950]="pestanaActiva === 'plantillas'"
+          [class.font-bold]="pestanaActiva === 'plantillas'"
+          [class.border-transparent]="pestanaActiva !== 'plantillas'"
+          [class.text-slate-400]="pestanaActiva !== 'plantillas'"
+          class="pb-4 px-1 border-b-2 font-semibold text-sm transition-all duration-150">
+          Plantillas de Importación
+        </button>
+      </nav>
+    </div>
+
+    <!-- ============================================================================
+         PESTAÑA 1: CATÁLOGOS DEL TRAMO
+         ============================================================================ -->
+    <div *ngIf="pestanaActiva === 'catalogo'" class="space-y-6">
+      
+      <!-- Barra de Control del Modo Edición -->
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-4 border-b border-slate-100">
+        <div>
+          <h2 class="text-base font-bold text-slate-800">Catálogo de Columnas y Prioridades</h2>
+          <p class="text-xs text-slate-500">Configura los nombres de Excel correspondientes a las variables del sistema.</p>
+        </div>
+        <div *ngIf="authService.tienePermiso('configuracion_tramos', 2)" class="flex items-center space-x-2 self-start sm:self-center">
+          <button 
+            *ngIf="!modoEdicion"
+            (click)="habilitarEdicion()"
+            class="flex items-center space-x-1.5 px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-xl text-xs transition-all duration-150">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+            </svg>
+            <span>Habilitar Edición</span>
+          </button>
+          <button 
+            *ngIf="modoEdicion"
+            (click)="cancelarEdicion()"
+            [disabled]="cargando"
+            class="px-4 py-2 text-xs font-bold text-slate-500 hover:text-slate-700 transition-colors disabled:opacity-50">
+            Cancelar
+          </button>
+          <button 
+            *ngIf="modoEdicion"
+            (click)="guardarCatalogos()"
+            [disabled]="cargando"
+            class="flex items-center space-x-1.5 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs transition-all duration-150 shadow-xs disabled:opacity-50">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+            </svg>
+            <span>Guardar Cambios</span>
+          </button>
+        </div>
+      </div>
+      
+      <!-- Sub-navegación de Catálogos (Datos / Montos / Teléfonos) -->
+      <div class="flex items-center space-x-1.5 p-1 bg-slate-100 rounded-xl w-fit">
+        <button 
+          (click)="subPestanaActiva = 'datos'"
+          [class.bg-white]="subPestanaActiva === 'datos'"
+          [class.text-slate-950]="subPestanaActiva === 'datos'"
+          [class.shadow-xs]="subPestanaActiva === 'datos'"
+          [class.text-slate-500]="subPestanaActiva !== 'datos'"
+          class="px-4 py-2 text-xs font-bold rounded-lg transition-all duration-200">
+          Campos Fijos (Datos)
+        </button>
+        <button 
+          (click)="subPestanaActiva = 'montos'"
+          [class.bg-white]="subPestanaActiva === 'montos'"
+          [class.text-slate-950]="subPestanaActiva === 'montos'"
+          [class.shadow-xs]="subPestanaActiva === 'montos'"
+          [class.text-slate-500]="subPestanaActiva !== 'montos'"
+          class="px-4 py-2 text-xs font-bold rounded-lg transition-all duration-200">
+          Transacciones (Montos)
+        </button>
+        <button 
+          (click)="subPestanaActiva = 'telefonos'"
+          [class.bg-white]="subPestanaActiva === 'telefonos'"
+          [class.text-slate-950]="subPestanaActiva === 'telefonos'"
+          [class.shadow-xs]="subPestanaActiva === 'telefonos'"
+          [class.text-slate-500]="subPestanaActiva !== 'telefonos'"
+          class="px-4 py-2 text-xs font-bold rounded-lg transition-all duration-200">
+          Prioridades de Teléfonos
+        </button>
+      </div>
+
+      <!-- TABLA DE CAMPOS FIJOS (DATOS) O TRANSACCIONES (MONTOS) -->
+      <div *ngIf="subPestanaActiva === 'datos' || subPestanaActiva === 'montos'" class="bg-white border border-slate-200/80 rounded-2xl overflow-hidden shadow-xs">
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm text-left text-slate-600 border-collapse">
+            <thead class="bg-slate-50 text-slate-500 font-semibold border-b border-slate-100 text-xs uppercase tracking-wider">
+              <tr>
+                <th class="px-6 py-4">Campo en el Sistema</th>
+                <th class="px-6 py-4">Tipo</th>
+                <th class="px-6 py-4">Nombre de Columna en Excel</th>
+                <th class="px-6 py-4 text-center">Obligatorio</th>
+                <th class="px-6 py-4 text-center">¿Activo en Cartera?</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+              <tr *ngFor="let col of obtenerColumnasFiltradas(subPestanaActiva === 'datos' ? 'DATO' : 'MONTO')" class="hover:bg-slate-50/50 transition-colors">
+                
+                <!-- Clave del Sistema -->
+                <td class="px-6 py-4 font-semibold text-slate-800">
+                  <code>{{ col.campo_sistema }}</code>
+                </td>
+
+                <!-- Tipo -->
+                <td class="px-6 py-4">
+                  <span 
+                    [class.bg-blue-50]="col.tipo_campo === 'DATO'"
+                    [class.text-blue-600]="col.tipo_campo === 'DATO'"
+                    [class.bg-purple-50]="col.tipo_campo === 'MONTO'"
+                    [class.text-purple-600]="col.tipo_campo === 'MONTO'"
+                    class="inline-flex px-2 py-0.5 rounded-md text-xs font-bold">
+                    {{ col.tipo_campo }}
+                  </span>
+                </td>
+
+                <!-- Input Nombre en Excel -->
+                <td class="px-6 py-4">
+                  <input 
+                    type="text" 
+                    [(ngModel)]="col.nombre_columna_excel"
+                    placeholder="Escribe el encabezado del Excel..."
+                    [disabled]="!modoEdicion || !authService.tienePermiso('configuracion_tramos', 2)"
+                    class="w-full max-w-xs px-3 py-1.5 bg-slate-50 disabled:opacity-75 disabled:cursor-not-allowed hover:bg-slate-100/60 focus:bg-white border border-slate-200 focus:border-slate-800 focus:ring-1 focus:ring-slate-800 rounded-lg font-medium text-slate-700 transition-all outline-hidden">
+                </td>
+
+                <!-- Obligatorio -->
+                <td class="px-6 py-4 text-center">
+                  <span 
+                    [class.text-orange-600]="col.es_obligatorio"
+                    [class.bg-orange-50]="col.es_obligatorio"
+                    [class.text-slate-400]="!col.es_obligatorio"
+                    [class.bg-slate-50]="!col.es_obligatorio"
+                    class="inline-flex px-2 py-0.5 rounded-md text-xs font-bold">
+                    {{ col.es_obligatorio ? 'REQUERIDO' : 'OPCIONAL' }}
+                  </span>
+                </td>
+
+                <!-- Estado Activo -->
+                <td class="px-6 py-4 text-center">
+                  <label class="relative inline-flex items-center" [class.cursor-pointer]="modoEdicion && authService.tienePermiso('configuracion_tramos', 2)" [class.opacity-60]="!modoEdicion">
+                    <input 
+                      type="checkbox" 
+                      [(ngModel)]="col.activo"
+                      [disabled]="!modoEdicion || !authService.tienePermiso('configuracion_tramos', 2)"
+                      class="sr-only peer">
+                    <div class="w-9 h-5 bg-slate-200 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-500"></div>
+                  </label>
+                </td>
+
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- TABLA DE PRIORIDAD DE TELÉFONOS -->
+      <div *ngIf="subPestanaActiva === 'telefonos'" class="bg-white border border-slate-200/80 rounded-2xl overflow-hidden shadow-xs">
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm text-left text-slate-600 border-collapse">
+            <thead class="bg-slate-50 text-slate-500 font-semibold border-b border-slate-100 text-xs uppercase tracking-wider">
+              <tr>
+                <th class="px-6 py-4">Columna del Teléfono en Excel</th>
+                <th class="px-6 py-4">Prioridad Base</th>
+                <th class="px-6 py-4 text-center">¿Buscar en Excel? (Activo)</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+              <tr *ngFor="let tel of telefonosCatalogo" class="hover:bg-slate-50/50 transition-colors">
+                
+                <!-- Nombre del teléfono (Excel) -->
+                <td class="px-6 py-4 font-semibold text-slate-800">
+                  {{ tel.nombre_columna_excel }}
+                </td>
+
+                <!-- Input Prioridad -->
+                <td class="px-6 py-4">
+                  <input 
+                    type="number" 
+                    [(ngModel)]="tel.prioridad"
+                    min="1"
+                    max="99"
+                    [disabled]="!modoEdicion || !authService.tienePermiso('configuracion_tramos', 2)"
+                    class="w-20 px-3 py-1.5 bg-slate-50 disabled:opacity-75 disabled:cursor-not-allowed hover:bg-slate-100/60 focus:bg-white border border-slate-200 focus:border-slate-800 focus:ring-1 focus:ring-slate-800 rounded-lg font-medium text-slate-700 transition-all outline-hidden text-center">
+                </td>
+
+                <!-- Estado Activo -->
+                <td class="px-6 py-4 text-center">
+                  <label class="relative inline-flex items-center" [class.cursor-pointer]="modoEdicion && authService.tienePermiso('configuracion_tramos', 2)" [class.opacity-60]="!modoEdicion">
+                    <input 
+                      type="checkbox" 
+                      [(ngModel)]="tel.activo"
+                      [disabled]="!modoEdicion || !authService.tienePermiso('configuracion_tramos', 2)"
+                      class="sr-only peer">
+                    <div class="w-9 h-5 bg-slate-200 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-500"></div>
+                  </label>
+                </td>
+
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Barra de Acción (Eliminada, movida a la cabecera) -->
+      <div class="h-2"></div>
+
+    </div>
+
+    <!-- ============================================================================
+         PESTAÑA 2: PLANTILLAS DE IMPORTACIÓN
+         ============================================================================ -->
+    <div *ngIf="pestanaActiva === 'plantillas'" class="space-y-6">
+      
+      <!-- Encabezado con Botón Crear -->
+      <div class="flex items-center justify-between pb-2 border-b border-slate-100">
+        <div>
+          <h2 class="text-lg font-bold text-slate-800">Plantillas de importación activas</h2>
+          <p class="text-xs text-slate-500">Configura plantillas Many-to-Many personalizadas seleccionando qué columnas activas se leerán.</p>
+        </div>
+        <button 
+          *ngIf="authService.tienePermiso('configuracion_tramos', 2)"
+          (click)="abrirModalNuevaPlantilla()"
+          class="flex items-center space-x-1.5 px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-xl text-xs transition-all duration-150">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+          </svg>
+          <span>Crear Plantilla</span>
+        </button>
+      </div>
+
+      <!-- Estado Vacío de Plantillas -->
+      <div *ngIf="plantillas.length === 0" class="flex flex-col items-center justify-center p-12 bg-white border border-slate-200/80 rounded-2xl text-center space-y-4 max-w-md mx-auto shadow-xs">
+        <div class="w-12 h-12 rounded-full bg-slate-50 flex items-center justify-center text-slate-400">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+          </svg>
+        </div>
+        <div>
+          <h3 class="text-base font-bold text-slate-800">No hay plantillas creadas</h3>
+          <p class="text-xs text-slate-500 mt-1">Crea tu primera plantilla de mapeo de Excel para esta cartera.</p>
+        </div>
+      </div>
+
+      <!-- Grilla de Plantillas -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div 
+          *ngFor="let plantilla of plantillas"
+          class="relative bg-white border border-slate-200/80 rounded-2xl p-5 shadow-xs hover:shadow-md transition-all duration-300 flex flex-col justify-between h-44">
+          
+          <div class="space-y-1">
+            <div class="flex items-center justify-between">
+              <h3 class="font-bold text-slate-800 text-base tracking-tight truncate max-w-[80%]">{{ plantilla.nombre }}</h3>
+              
+              <!-- Botón Borrar Plantilla -->
+              <button 
+                *ngIf="authService.tienePermiso('configuracion_tramos', 3)"
+                (click)="eliminarPlantilla(plantilla, $event)"
+                class="p-1 rounded-md text-slate-400 hover:text-red-500 hover:bg-red-50 transition-all outline-hidden">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                </svg>
+              </button>
+            </div>
+            <span class="text-xs text-slate-400 font-medium">Mapeo de Carga de Cartera</span>
+          </div>
+
+          <!-- Acciones de Plantilla -->
+          <div class="mt-4 flex items-center space-x-2">
+            <button 
+              (click)="abrirConfigurarMapeo(plantilla.id)"
+              class="flex-1 flex items-center justify-center space-x-1 px-3 py-2 bg-slate-900 text-white hover:bg-slate-800 font-bold rounded-lg text-xs transition-all duration-150">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+              <span>Configurar Mapeo</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+</div>
+
+<!-- ============================================================================
+     MODAL: CREAR NUEVA PLANTILLA
+     ============================================================================ -->
+<div 
+  *ngIf="modalPlantillaAbierto"
+  class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-xs p-4">
+  <div class="bg-white rounded-2xl w-full max-w-md p-6 shadow-xl space-y-4">
+    
+    <!-- Modal Header -->
+    <div class="flex items-center justify-between pb-2 border-b border-slate-100">
+      <h3 class="text-lg font-bold text-slate-900">Crear Nueva Plantilla</h3>
+      <button 
+        (click)="modalPlantillaAbierto = false"
+        class="text-slate-400 hover:text-slate-600 transition-colors focus:outline-hidden">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+    </div>
+
+    <!-- Modal Body -->
+    <div class="space-y-4">
+      
+      <!-- Input Nombre -->
+      <div class="space-y-1.5">
+        <label class="text-xs font-bold text-slate-600 uppercase tracking-wider">Nombre de la Plantilla</label>
+        <input 
+          type="text" 
+          [(ngModel)]="nombreNuevaPlantilla"
+          placeholder="Ej: Subida Saldos Belcor"
+          class="w-full px-4 py-2.5 border border-slate-200 focus:border-slate-800 focus:ring-1 focus:ring-slate-800 rounded-xl font-medium text-slate-700 outline-hidden">
+      </div>
+
+      <!-- Selector Clonación -->
+      <div class="space-y-1.5">
+        <label class="text-xs font-bold text-slate-600 uppercase tracking-wider">Copiar estructura desde (Opcional)</label>
+        <select 
+          [(ngModel)]="copiarDesdePlantillaId"
+          class="w-full px-4 py-2.5 border border-slate-200 focus:border-slate-800 focus:ring-1 focus:ring-slate-800 rounded-xl font-medium text-slate-700 bg-white outline-hidden">
+          <option [ngValue]="null">-- Empezar plantilla vacía --</option>
+          <option *ngFor="let p of plantillas" [value]="p.id">{{ p.nombre }}</option>
+        </select>
+        <p class="text-[10px] text-slate-400">
+          Copia rápidamente las asociaciones Many-to-Many de columnas de una plantilla existente en CE1 para ahorrar tiempo.
+        </p>
+      </div>
+
+    </div>
+
+    <!-- Modal Footer -->
+    <div class="flex items-center justify-end space-x-2 pt-2 border-t border-slate-100">
+      <button 
+        (click)="modalPlantillaAbierto = false"
+        class="px-4 py-2 text-xs font-bold text-slate-500 hover:text-slate-700 transition-colors">
+        Cancelar
+      </button>
+      <button 
+        (click)="crearPlantilla()"
+        class="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-xl text-xs transition-all duration-150">
+        Crear Plantilla
+      </button>
+    </div>
+
+  </div>
+</div>
+
+<!-- ============================================================================
+     DRAWER FLOTANTE (SIDE PANEL): ASOCIACIÓN DE COLUMNAS MANY-TO-MANY (CHECKBOXES)
+     ============================================================================ -->
+<div 
+  *ngIf="drawerMapeoAbierto"
+  class="fixed inset-0 z-50 flex justify-end bg-slate-900/60 backdrop-blur-xs transition-opacity duration-300">
+  
+  <!-- Back-drop click to close -->
+  <div class="flex-1" (click)="cerrarDrawer()"></div>
+
+  <!-- Drawer Body -->
+  <div class="w-full max-w-2xl bg-white h-screen shadow-2xl flex flex-col justify-between overflow-hidden">
+    
+    <!-- Drawer Header -->
+    <div class="px-6 py-5 border-b border-slate-100 flex items-center justify-between">
+      <div>
+        <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Configurando Mapeo</span>
+        <h3 class="text-xl font-bold text-slate-900 mt-0.5">{{ plantillaEnEdicion?.nombre }}</h3>
+        <p class="text-xs text-slate-400 mt-0.5">Elige qué columnas activas de la cartera se incluirán en esta plantilla.</p>
+      </div>
+      <button 
+        (click)="cerrarDrawer()"
+        class="p-2 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-50 transition-all outline-hidden">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+    </div>
+
+    <!-- Drawer Content (Scrollable) -->
+    <div class="flex-1 overflow-y-auto p-6 space-y-6">
+      
+      <!-- GRUPO A: CAMPOS FIJOS (DATOS) -->
+      <div class="space-y-3">
+        <div class="flex items-center justify-between pb-1 border-b border-slate-100">
+          <h4 class="text-xs font-bold text-slate-700 uppercase tracking-wider">Campos Fijos del Cliente (Datos)</h4>
+          <span class="text-[10px] bg-blue-50 text-blue-600 px-2 py-0.5 rounded-md font-bold">Mapeo Fijo</span>
+        </div>
+        
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <label 
+            *ngFor="let col of obtenerColumnasActivas('DATO')"
+            class="flex items-start space-x-3 p-3 border border-slate-150 rounded-xl hover:bg-slate-50 cursor-pointer transition-colors"
+            [class.border-slate-800]="estaColumnaSeleccionada(col.id!)">
+            <input 
+              type="checkbox"
+              [checked]="estaColumnaSeleccionada(col.id!)"
+              (change)="toggleColumnaSeleccionada(col.id!)"
+              class="w-4 h-4 text-slate-900 border-slate-300 rounded-sm focus:ring-slate-800 mt-0.5">
+            <div class="leading-none">
+              <span class="text-sm font-semibold text-slate-800">{{ col.nombre_columna_excel }}</span>
+              <p class="text-[10px] text-slate-400 mt-1">Mapea a: <code>{{ col.campo_sistema }}</code></p>
+            </div>
+          </label>
+        </div>
+      </div>
+
+      <!-- GRUPO B: TRANSACCIONES (MONTOS) -->
+      <div class="space-y-3">
+        <div class="flex items-center justify-between pb-1 border-b border-slate-100">
+          <h4 class="text-xs font-bold text-slate-700 uppercase tracking-wider">Transacciones de Cobranza (Montos)</h4>
+          <span class="text-[10px] bg-purple-50 text-purple-600 px-2 py-0.5 rounded-md font-bold">Libro Diario</span>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <label 
+            *ngFor="let col of obtenerColumnasActivas('MONTO')"
+            class="flex items-start space-x-3 p-3 border border-slate-150 rounded-xl hover:bg-slate-50 cursor-pointer transition-colors"
+            [class.border-slate-800]="estaColumnaSeleccionada(col.id!)">
+            <input 
+              type="checkbox"
+              [checked]="estaColumnaSeleccionada(col.id!)"
+              (change)="toggleColumnaSeleccionada(col.id!)"
+              class="w-4 h-4 text-slate-900 border-slate-300 rounded-sm focus:ring-slate-800 mt-0.5">
+            <div class="leading-none">
+              <span class="text-sm font-semibold text-slate-800">{{ col.nombre_columna_excel }}</span>
+              <p class="text-[10px] text-slate-400 mt-1">Mapea a movimiento: <code>{{ col.campo_sistema }}</code></p>
+            </div>
+          </label>
+        </div>
+      </div>
+
+      <!-- GRUPO C: LISTA DE TELÉFONOS -->
+      <div class="space-y-3">
+        <div class="flex items-center justify-between pb-1 border-b border-slate-100">
+          <h4 class="text-xs font-bold text-slate-700 uppercase tracking-wider">Inventario de Teléfonos a Buscar</h4>
+          <span class="text-[10px] bg-emerald-50 text-emerald-600 px-2 py-0.5 rounded-md font-bold">Historial de Llamado</span>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <label 
+            *ngFor="let tel of obtenerTelefonosActivos()"
+            class="flex items-start space-x-3 p-3 border border-slate-150 rounded-xl hover:bg-slate-50 cursor-pointer transition-colors"
+            [class.border-slate-800]="estaTelefonoSeleccionado(tel.id!)">
+            <input 
+              type="checkbox"
+              [checked]="estaTelefonoSeleccionado(tel.id!)"
+              (change)="toggleTelefonoSeleccionado(tel.id!)"
+              class="w-4 h-4 text-slate-900 border-slate-300 rounded-sm focus:ring-slate-800 mt-0.5">
+            <div class="leading-none">
+              <span class="text-sm font-semibold text-slate-800">{{ tel.nombre_columna_excel }}</span>
+              <p class="text-[10px] text-slate-400 mt-1">Prioridad base: <span class="font-bold">{{ tel.prioridad }}</span></p>
+            </div>
+          </label>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Drawer Footer -->
+    <div class="px-6 py-4 border-t border-slate-100 flex items-center justify-end space-x-2 bg-slate-50">
+      <button 
+        (click)="cerrarDrawer()"
+        class="px-4 py-2.5 text-xs font-bold text-slate-500 hover:text-slate-700 transition-colors">
+        Cancelar
+      </button>
+      <button 
+        (click)="guardarMapeo()"
+        class="flex items-center space-x-1.5 px-6 py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-xl text-xs transition-all duration-150">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+        </svg>
+        <span>Guardar Mapeo</span>
+      </button>
+    </div>
+
+  </div>
+</div>

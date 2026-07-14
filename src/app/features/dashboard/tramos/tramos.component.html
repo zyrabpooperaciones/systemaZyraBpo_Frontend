@@ -1,0 +1,132 @@
+<div class="space-y-6">
+  <!-- Cabecera de Módulo -->
+  <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-4 border-b border-slate-100">
+    <div>
+      <h1 class="text-2xl font-bold tracking-tight text-slate-900">Configuración de Tramos y Carteras</h1>
+      <p class="text-sm text-slate-500 mt-1">
+        Gestiona los tramos activos, define el catálogo de columnas y configura las plantillas de mapeo Many-to-Many.
+      </p>
+    </div>
+
+    <!-- Filtro de Tramos Activos / Inactivos -->
+    <div class="flex items-center self-start sm:self-center p-1 bg-slate-150 rounded-xl">
+      <button 
+        (click)="filtrarTramos(false)"
+        [class.bg-white]="!mostrarInactivos"
+        [class.text-slate-950]="!mostrarInactivos"
+        [class.shadow-xs]="!mostrarInactivos"
+        [class.text-slate-500]="mostrarInactivos"
+        class="px-4 py-2 text-sm font-semibold rounded-lg transition-all duration-200">
+        Activos
+      </button>
+      <button 
+        (click)="filtrarTramos(true)"
+        [class.bg-white]="mostrarInactivos"
+        [class.text-slate-950]="mostrarInactivos"
+        [class.shadow-xs]="mostrarInactivos"
+        [class.text-slate-500]="!mostrarInactivos"
+        class="px-4 py-2 text-sm font-semibold rounded-lg transition-all duration-200">
+        Inactivos
+      </button>
+    </div>
+  </div>
+
+  <!-- Contenedor Principal / Spinner de Carga -->
+  <div *ngIf="cargando" class="flex flex-col items-center justify-center py-20 space-y-4">
+    <div class="relative w-12 h-12">
+      <div class="absolute inset-0 rounded-full border-4 border-slate-200"></div>
+      <div class="absolute inset-0 rounded-full border-4 border-t-orange-500 animate-spin"></div>
+    </div>
+    <span class="text-sm text-slate-500 font-medium">Cargando carteras...</span>
+  </div>
+
+  <!-- Contenido Principal -->
+  <div *ngIf="!cargando">
+    
+    <!-- Estado Vacío -->
+    <div *ngIf="tramos.length === 0" class="flex flex-col items-center justify-center p-12 bg-white border border-slate-200/80 rounded-2xl text-center space-y-4 max-w-lg mx-auto shadow-xs">
+      <div class="w-16 h-16 rounded-full bg-slate-50 flex items-center justify-center text-slate-400">
+        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+        </svg>
+      </div>
+      <div>
+        <h3 class="text-lg font-bold text-slate-800">No hay tramos registrados</h3>
+        <p class="text-sm text-slate-500 mt-1">
+          No se encontraron tramos {{ mostrarInactivos ? 'inactivos' : 'activos' }} en el sistema.
+        </p>
+      </div>
+    </div>
+
+    <!-- Grilla de Tramos -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div 
+        *ngFor="let tramo of tramos"
+        [class.border-emerald-100]="tramo.activo"
+        [class.bg-emerald-50_10]="tramo.activo"
+        class="group relative overflow-hidden bg-white border border-slate-200/80 rounded-2xl p-6 shadow-xs hover:shadow-md hover:-translate-y-1 transition-all duration-300">
+        
+        <!-- Detalle de Tarjeta -->
+        <div class="flex items-start justify-between">
+          <div class="flex items-center space-x-4">
+            <!-- Icono con nombre del tramo en degradado -->
+            <div class="w-12 h-12 rounded-xl flex items-center justify-center bg-linear-to-tr from-slate-900 to-slate-800 text-white font-bold text-lg shadow-md shadow-slate-900/10">
+              {{ tramo.nombre }}
+            </div>
+            <div>
+              <h2 class="text-xl font-bold text-slate-800 tracking-tight">{{ tramo.nombre }}</h2>
+              <span class="text-xs text-slate-400 font-medium">Cartera de Cobranza</span>
+            </div>
+          </div>
+
+          <!-- Badge de Estado -->
+          <span 
+            [class.bg-emerald-50]="tramo.activo"
+            [class.text-emerald-600]="tramo.activo"
+            [class.bg-slate-100]="!tramo.activo"
+            [class.text-slate-500]="!tramo.activo"
+            class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold">
+            <span 
+              [class.bg-emerald-500]="tramo.activo"
+              [class.bg-slate-400]="!tramo.activo"
+              class="w-1.5 h-1.5 rounded-full mr-1.5">
+            </span>
+            {{ tramo.activo ? 'Activo' : 'Inactivo' }}
+          </span>
+        </div>
+
+        <div class="mt-4">
+          <p class="text-xs text-slate-500 leading-relaxed">
+            Personaliza la importación de deudas, asigna las prioridades telefónicas y administra plantillas dinámicas específicas para esta cartera.
+          </p>
+        </div>
+
+        <!-- Controles Inferiores -->
+        <div class="flex items-center justify-between mt-6 pt-4 border-t border-slate-100">
+          <span class="text-xs font-semibold text-slate-500">¿Gestión Activa?</span>
+          
+          <!-- Switch de Activar/Desactivar -->
+          <label class="relative inline-flex items-center cursor-pointer">
+            <input 
+              type="checkbox" 
+              [checked]="tramo.activo"
+              (change)="toggleEstado(tramo, $event)"
+              class="sr-only peer">
+            <div class="w-11 h-6 bg-slate-200 peer-focus:outline-hidden rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
+          </label>
+        </div>
+
+        <!-- Botón de Configuración -->
+        <button 
+          [routerLink]="['/dashboard/tramos', tramo.id]"
+          class="w-full mt-4 flex items-center justify-center space-x-2 px-4 py-2.5 bg-slate-900 text-white hover:bg-slate-800 font-semibold rounded-xl text-sm shadow-xs transition-all duration-150 active:scale-98">
+          <span>Configurar Columnas</span>
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+          </svg>
+        </button>
+      </div>
+    </div>
+
+  </div>
+</div>

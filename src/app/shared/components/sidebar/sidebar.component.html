@@ -9,16 +9,18 @@
 <aside 
   [class.translate-x-0]="isOpen()" 
   [class.-translate-x-full]="!isOpen()"
-  class="fixed top-0 bottom-0 left-0 z-50 flex flex-col w-64 h-screen bg-slate-900 border-r border-slate-800 text-slate-300 transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:flex">
+  [class.w-64]="isOpen()"
+  [class.w-20]="!isOpen()"
+  class="fixed top-0 bottom-0 left-0 z-50 flex flex-col h-screen bg-slate-900 border-r border-slate-800 text-slate-300 transition-all duration-300 ease-in-out lg:translate-x-0">
   
   <!-- Header del Sidebar con el Logo de la Empresa -->
-  <div class="flex items-center justify-between px-6 py-5 border-b border-slate-800">
-    <div class="flex items-center space-x-3">
+  <div class="flex items-center px-5 py-5 border-b border-slate-800" [class.justify-between]="isOpen()" [class.justify-center]="!isOpen()">
+    <div class="flex items-center shrink-0" [class.space-x-3]="isOpen()">
       <!-- Icono decorativo de Zyra con degradado naranja-amarillo -->
-      <div class="flex items-center justify-center w-9 h-9 rounded-lg bg-linear-to-tr from-orange-600 to-amber-500 shadow-md shadow-orange-500/20 text-white font-bold text-lg">
+      <div class="flex items-center justify-center w-9 h-9 rounded-lg bg-linear-to-tr from-orange-600 to-amber-500 shadow-md shadow-orange-500/20 text-white font-bold text-lg shrink-0">
         Z
       </div>
-      <div>
+      <div *ngIf="isOpen()" class="transition-opacity duration-300">
         <h1 class="text-lg font-bold tracking-wider text-white">Zyra BPO</h1>
         <span class="text-xs text-slate-500 font-medium">Sistema de Operaciones</span>
       </div>
@@ -26,6 +28,7 @@
     
     <!-- Botón para cerrar en móvil -->
     <button 
+      *ngIf="isOpen()"
       (click)="onItemClick()" 
       class="p-1 rounded-md hover:bg-slate-800 lg:hidden text-slate-400 hover:text-white focus:outline-hidden">
       <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -35,26 +38,42 @@
   </div>
 
   <!-- Enlaces de navegación -->
-  <nav class="flex-1 px-4 py-6 space-y-1.5 overflow-y-auto">
-    <a 
-      *ngFor="let item of menuFiltrado" 
-      [routerLink]="item.route"
-      routerLinkActive="bg-slate-800/80 text-orange-500 border-l-4 border-orange-500 pl-3!"
-      [routerLinkActiveOptions]="{ exact: item.route === '/dashboard/inicio' }"
-      (click)="onItemClick()"
-      class="flex items-center px-4 py-3 rounded-lg font-medium text-slate-400 border-l-4 border-transparent hover:bg-slate-800/50 hover:text-white transition-all duration-150">
+  <nav class="flex-1 px-4 py-6 space-y-4 overflow-y-auto">
+    <div *ngFor="let cat of menuFiltrado" class="space-y-1.5">
+      <!-- Cabecera de Categoría -->
+      <h3 
+        *ngIf="isOpen()"
+        class="px-4 text-[10px] font-bold text-slate-500 uppercase tracking-widest select-none mt-2 transition-opacity duration-300">
+        {{ cat.categoria }}
+      </h3>
+      <!-- Separador delgado en modo colapsado -->
+      <div *ngIf="!isOpen()" class="border-t border-slate-800/80 my-2 mx-1 transition-all"></div>
       
-      <!-- Icono inyectado en crudo -->
-      <span class="mr-3" [innerHTML]="item.iconSvgSafe"></span>
-      <span>{{ item.label }}</span>
-    </a>
+      <!-- Enlaces de la Categoría -->
+      <a 
+        *ngFor="let item of cat.items" 
+        [routerLink]="item.route"
+        routerLinkActive="bg-slate-800/80 text-orange-500 border-l-4 border-orange-500 pl-3!"
+        [routerLinkActiveOptions]="{ exact: item.route === '/dashboard/inicio' }"
+        (click)="onItemClick()"
+        [class.justify-center]="!isOpen()"
+        [class.px-4]="isOpen()"
+        [class.px-0]="!isOpen()"
+        [title]="!isOpen() ? item.label : ''"
+        class="flex items-center py-2.5 rounded-lg font-medium text-slate-400 border-l-4 border-transparent hover:bg-slate-800/50 hover:text-white transition-all duration-155">
+        
+        <!-- Icono inyectado en crudo -->
+        <span [class.mr-3]="isOpen()" class="shrink-0 flex items-center justify-center" [innerHTML]="item.iconSvgSafe"></span>
+        <span *ngIf="isOpen()" class="text-sm transition-opacity duration-300">{{ item.label }}</span>
+      </a>
+    </div>
   </nav>
 
   <!-- Footer del Sidebar -->
-  <div class="p-4 border-t border-slate-800 bg-slate-950/40">
-    <div class="flex items-center justify-between text-xs text-slate-500">
-      <span>Versión 1.0.0</span>
-      <span class="flex h-2 w-2 relative">
+  <div class="p-4 border-t border-slate-800 bg-slate-950/40 flex items-center justify-center">
+    <div class="flex items-center text-xs text-slate-500 w-full" [class.justify-between]="isOpen()" [class.justify-center]="!isOpen()">
+      <span *ngIf="isOpen()" class="transition-opacity duration-300">Versión 1.0.0</span>
+      <span class="flex h-2 w-2 relative shrink-0">
         <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
         <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
       </span>
