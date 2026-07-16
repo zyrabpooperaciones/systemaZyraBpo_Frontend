@@ -1,6 +1,5 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink } from '@angular/router';
 import { AuthService } from '../../../core/services/auth/auth.service';
 import { UsuariosService } from '../../../core/services/usuarios/usuarios.service';
 import { RolesService } from '../../../core/services/roles/roles.service';
@@ -9,7 +8,7 @@ import { TramosService } from '../../../core/services/tramos/tramos.service';
 @Component({
   selector: 'app-inicio',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule],
   templateUrl: './inicio.component.html',
   styles: []
 })

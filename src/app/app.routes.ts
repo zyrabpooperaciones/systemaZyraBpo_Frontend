@@ -46,6 +46,11 @@ export const routes: Routes = [
         data: { modulo: 'configuracion_tramos' }
       },
       {
+        path: 'importacion',
+        loadComponent: () => import('./features/dashboard/importacion/importacion.component').then(m => m.ImportacionComponent),
+        data: { modulo: 'importacion' }
+      },
+      {
         path: 'perfil',
         loadComponent: () => import('./features/dashboard/perfil/perfil.component').then(m => m.PerfilComponent)
       },

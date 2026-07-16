@@ -32,8 +32,10 @@ export class DetalleTramoComponent implements OnInit {
 
   // Plantillas
   plantillas: Plantilla[] = [];
+  filtroTipoPlantilla = 'TODAS'; // 'TODAS' | 'BASE_ORIGINAL' | 'BASE_ACTUALIZACION' | 'BASE_SALDOS'
   modalPlantillaAbierto = false;
   nombreNuevaPlantilla = '';
+  tipoProcesoNuevaPlantilla = 'BASE_ORIGINAL';
   copiarDesdePlantillaId: number | null = null;
 
   // Edición de Mapeos de una Plantilla específica
@@ -175,6 +177,7 @@ export class DetalleTramoComponent implements OnInit {
 
   abrirModalNuevaPlantilla(): void {
     this.nombreNuevaPlantilla = '';
+    this.tipoProcesoNuevaPlantilla = 'BASE_ORIGINAL';
     this.copiarDesdePlantillaId = null;
     this.modalPlantillaAbierto = true;
   }
@@ -188,6 +191,7 @@ export class DetalleTramoComponent implements OnInit {
     this.cargando = true;
     const payload = {
       nombre: this.nombreNuevaPlantilla.trim(),
+      tipo_proceso: this.tipoProcesoNuevaPlantilla,
       copiar_desde_plantilla_id: this.copiarDesdePlantillaId
     };
 
@@ -204,6 +208,13 @@ export class DetalleTramoComponent implements OnInit {
         this.cargando = false;
       }
     });
+  }
+
+  obtenerPlantillasFiltradas(): Plantilla[] {
+    if (this.filtroTipoPlantilla === 'TODAS') {
+      return this.plantillas;
+    }
+    return this.plantillas.filter(p => p.tipo_proceso === this.filtroTipoPlantilla);
   }
 
   eliminarPlantilla(plantilla: Plantilla, event: Event): void {
@@ -238,6 +249,7 @@ export class DetalleTramoComponent implements OnInit {
               this.drawerMapeoAbierto = false;
             }
             this.cargarPlantillas();
+            this.cargando = false;
           },
           error: () => {
             this.toastService.error('Error al intentar eliminar la plantilla.');

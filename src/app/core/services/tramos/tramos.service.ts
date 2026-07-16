@@ -31,6 +31,7 @@ export interface Plantilla {
   id: number;
   tramo_id: number;
   nombre: string;
+  tipo_proceso: string;
   activo: boolean;
 }
 
@@ -38,6 +39,7 @@ export interface PlantillaDetail {
   id: number;
   tramo_id: number;
   nombre: string;
+  tipo_proceso: string;
   activo: boolean;
   columnas: Columna[];
   telefonos: Telefono[];
@@ -100,7 +102,7 @@ export class TramosService {
     return this.http.get<Plantilla[]>(`${this.URL_TRAMOS}/${tramoId}/plantillas`);
   }
 
-  crearPlantilla(tramoId: number, payload: { nombre: string; copiar_desde_plantilla_id?: number | null }): Observable<Plantilla> {
+  crearPlantilla(tramoId: number, payload: { nombre: string; tipo_proceso: string; copiar_desde_plantilla_id?: number | null }): Observable<Plantilla> {
     return this.http.post<Plantilla>(`${this.URL_TRAMOS}/${tramoId}/plantillas`, payload);
   }
 
