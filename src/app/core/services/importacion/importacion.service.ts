@@ -27,6 +27,7 @@ export interface ImportSummaryResponse {
   monto_deuda_inicial_total: number;
   monto_interes_total: number;
   monto_gasto_adm_total: number;
+  monto_pagos_total: number;
 }
 
 export interface TramoActivoResponse {
@@ -55,6 +56,7 @@ export interface HistorialImportacionResponse {
   monto_deuda_inicial_total: number;
   monto_interes_total: number;
   monto_gasto_adm_total: number;
+  monto_pagos_total: number;
   duracion_segundos: number;
 }
 

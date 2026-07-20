@@ -376,8 +376,8 @@
               </button>
             </div>
 
-            <!-- Grid de Indicadores Principales -->
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+            <!-- Grid de Indicadores Principales (No Saldos) -->
+            <div *ngIf="tipoSubidaFiltro !== 'BASE_SALDOS'" class="grid grid-cols-2 md:grid-cols-4 gap-6">
               <div class="bg-slate-50 border border-slate-200/50 rounded-2xl p-4 flex flex-col justify-between space-y-1">
                 <span class="text-slate-450 text-[10px] font-bold uppercase tracking-wider">Filas Leídas</span>
                 <span class="text-2xl font-black text-slate-800">{{ resumenCarga.total_filas_procesadas | number }}</span>
@@ -403,41 +403,76 @@
               </div>
             </div>
 
-            <!-- Detalles Técnicos -->
-            <div class="bg-slate-50 border border-slate-200/60 rounded-2xl p-6">
+            <!-- Grid de Indicadores Principales (Saldos) -->
+            <div *ngIf="tipoSubidaFiltro === 'BASE_SALDOS'" class="grid grid-cols-2 md:grid-cols-4 gap-6">
+              <div class="bg-slate-50 border border-slate-200/50 rounded-2xl p-4 flex flex-col justify-between space-y-1">
+                <span class="text-slate-450 text-[10px] font-bold uppercase tracking-wider">Filas Leídas</span>
+                <span class="text-2xl font-black text-slate-800">{{ resumenCarga.total_filas_procesadas | number }}</span>
+                <span class="text-[10px] text-slate-400 font-medium">Excel procesado</span>
+              </div>
+
+              <div class="bg-slate-50 border border-slate-200/50 rounded-2xl p-4 flex flex-col justify-between space-y-1">
+                <span class="text-slate-450 text-[10px] font-bold uppercase tracking-wider">Cargos Actualizados</span>
+                <span class="text-2xl font-black text-slate-800">{{ resumenCarga.cargos_actualizados | number }}</span>
+                <span class="text-[10px] text-indigo-650 font-bold">+{{ resumenCarga.cargos_nuevos | number }} nuevos</span>
+              </div>
+
+              <div class="bg-slate-50 border border-slate-200/50 rounded-2xl p-4 flex flex-col justify-between space-y-1">
+                <span class="text-slate-450 text-[10px] font-bold uppercase tracking-wider">Movimientos de Pago</span>
+                <span class="text-2xl font-black text-slate-800">{{ resumenCarga.movimientos_financieros_creados | number }}</span>
+                <span class="text-[10px] text-slate-400 font-medium">Transacciones PAGO</span>
+              </div>
+
+              <div class="bg-emerald-50/30 border border-emerald-100/80 rounded-2xl p-4 flex flex-col justify-between space-y-1">
+                <span class="text-emerald-650 text-[10px] font-bold uppercase tracking-wider">Abonos Registrados</span>
+                <span class="text-2xl font-black text-emerald-750">Bs {{ resumenCarga.monto_pagos_total | number:'1.2-2' }}</span>
+                <span class="text-[10px] text-emerald-500 font-semibold">Pagos conciliados</span>
+              </div>
+            </div>
+
+            <!-- Detalles Técnicos (No Saldos) -->
+            <div *ngIf="tipoSubidaFiltro !== 'BASE_SALDOS'" class="bg-slate-50 border border-slate-200/60 rounded-2xl p-6">
               <h4 class="text-xs font-bold text-slate-600 uppercase tracking-wider mb-4">Detalles Técnicos</h4>
               <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 text-xs text-slate-650 font-semibold">
-                
                 <div class="flex items-center space-x-2">
                   <span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span>
                   <span>Teléfonos Nuevos: <strong class="text-slate-800">{{ resumenCarga.telefonos_nuevos | number }}</strong></span>
                 </div>
-
                 <div class="flex items-center space-x-2">
                   <span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span>
                   <span>Teléfonos de Uso Actualizados: <strong class="text-slate-800">{{ resumenCarga.telefono_uso_actualizados | number }}</strong></span>
                 </div>
-
                 <div class="flex items-center space-x-2">
                   <span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span>
                   <span>Movimientos de Cargos Creados: <strong class="text-slate-800">{{ resumenCarga.movimientos_financieros_creados | number }}</strong></span>
                 </div>
-
                 <div class="flex items-center space-x-2">
                   <span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span>
                   <span>Interés Total Acumulado: <strong class="text-slate-800">Bs {{ resumenCarga.monto_interes_total | number:'1.2-2' }}</strong></span>
                 </div>
-
                 <div class="flex items-center space-x-2">
                   <span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span>
                   <span>Gastos Administrativos: <strong class="text-slate-800">Bs {{ resumenCarga.monto_gasto_adm_total | number:'1.2-2' }}</strong></span>
                 </div>
-
                 <div class="flex items-center space-x-2">
                   <span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span>
                   <span>Tiempo de Ejecución: <strong class="text-slate-800">{{ resumenCarga.duracion_segundos | number:'1.2-2' }} segundos</strong></span>
                 </div>
+              </div>
+            </div>
 
+            <!-- Detalles Técnicos (Saldos) -->
+            <div *ngIf="tipoSubidaFiltro === 'BASE_SALDOS'" class="bg-slate-50 border border-slate-200/60 rounded-2xl p-6">
+              <h4 class="text-xs font-bold text-slate-600 uppercase tracking-wider mb-4">Detalles Técnicos</h4>
+              <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 text-xs text-slate-650 font-semibold">
+                <div class="flex items-center space-x-2">
+                  <span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span>
+                  <span>Movimientos Registrados: <strong class="text-slate-800">{{ resumenCarga.movimientos_financieros_creados | number }} transacciones PAGO</strong></span>
+                </div>
+                <div class="flex items-center space-x-2">
+                  <span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span>
+                  <span>Tiempo de Ejecución: <strong class="text-slate-800">{{ resumenCarga.duracion_segundos | number:'1.2-2' }} segundos</strong></span>
+                </div>
               </div>
             </div>
 
@@ -498,7 +533,7 @@
                 <th class="px-6 py-3">Fecha de Carga</th>
                 <th class="px-6 py-3">Cargado Por</th>
                 <th class="px-6 py-3 text-center">Filas</th>
-                <th class="px-6 py-3 text-right">Monto Inicial</th>
+                <th class="px-6 py-3 text-right">{{ pestanaHistorialActiva === 'BASE_SALDOS' ? 'Total Abonos' : 'Monto Inicial' }}</th>
                 <th class="px-6 py-3 text-center">Acciones</th>
               </tr>
             </thead>
@@ -531,9 +566,9 @@
                   {{ carga.registros_procesados | number }}
                 </td>
 
-                <!-- Monto Inicial -->
-                <td class="px-6 py-4 text-right font-black text-indigo-900">
-                  Bs {{ carga.monto_deuda_inicial_total | number:'1.2-2' }}
+                <!-- Monto Inicial o Total Abonos -->
+                <td class="px-6 py-4 text-right font-black" [class.text-indigo-900]="pestanaHistorialActiva !== 'BASE_SALDOS'" [class.text-emerald-950]="pestanaHistorialActiva === 'BASE_SALDOS'">
+                  Bs {{ (pestanaHistorialActiva === 'BASE_SALDOS' ? carga.monto_pagos_total : carga.monto_deuda_inicial_total) | number:'1.2-2' }}
                 </td>
 
                 <!-- Acciones -->
@@ -633,8 +668,8 @@
         </div>
       </div>
 
-      <!-- Grid KPIs de Auditoría -->
-      <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+      <!-- Grid KPIs de Auditoría (No Saldos) -->
+      <div *ngIf="cargaAuditoriaSeleccionada.tipo_subida !== 'BASE_SALDOS'" class="grid grid-cols-2 sm:grid-cols-4 gap-4">
         
         <div class="border border-slate-200 p-4 rounded-xl space-y-1 bg-white">
           <span class="text-slate-450 text-[9px] font-bold uppercase tracking-wider">Deudores Nuevos</span>
@@ -654,36 +689,65 @@
           <span class="text-[9px] text-slate-500 font-semibold">{{ cargaAuditoriaSeleccionada.telefono_uso_actualizados | number }} tel. de uso act.</span>
         </div>
 
-        <div class="border border-indigo-150 p-4 rounded-xl space-y-1 bg-indigo-50/10">
-          <span class="text-indigo-600 text-[9px] font-bold uppercase tracking-wider">Monto Inicial</span>
+        <div class="border border-indigo-155 p-4 rounded-xl space-y-1 bg-indigo-50/10">
+          <span class="text-indigo-650 text-[9px] font-bold uppercase tracking-wider">Monto Inicial</span>
           <h4 class="text-xl font-black text-indigo-750">Bs {{ cargaAuditoriaSeleccionada.monto_deuda_inicial_total | number:'1.2-2' }}</h4>
           <span class="text-[9px] text-indigo-500 font-semibold">Capital neto</span>
         </div>
 
       </div>
 
+      <!-- Grid KPIs de Auditoría (Saldos) -->
+      <div *ngIf="cargaAuditoriaSeleccionada.tipo_subida === 'BASE_SALDOS'" class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+        
+        <div class="border border-slate-200 p-4 rounded-xl space-y-1 bg-white">
+          <span class="text-slate-450 text-[9px] font-bold uppercase tracking-wider">Cargos Procesados</span>
+          <h4 class="text-xl font-black text-slate-800">{{ cargaAuditoriaSeleccionada.registros_procesados | number }}</h4>
+          <span class="text-[9px] text-slate-450 font-semibold">Total Excel</span>
+        </div>
+
+        <div class="border border-slate-200 p-4 rounded-xl space-y-1 bg-white">
+          <span class="text-slate-450 text-[9px] font-bold uppercase tracking-wider">Cargos Actualizados</span>
+          <h4 class="text-xl font-black text-slate-800">{{ cargaAuditoriaSeleccionada.cargos_actualizados | number }}</h4>
+          <span class="text-[9px] text-indigo-650 font-bold">+{{ cargaAuditoriaSeleccionada.cargos_nuevos | number }} nuevos</span>
+        </div>
+
+        <div class="border border-slate-200 p-4 rounded-xl space-y-1 bg-white">
+          <span class="text-slate-450 text-[9px] font-bold uppercase tracking-wider">Movimientos de Pago</span>
+          <h4 class="text-xl font-black text-slate-800">{{ cargaAuditoriaSeleccionada.movimientos_financieros_creados | number }}</h4>
+          <span class="text-[9px] text-slate-500 font-semibold">Transacciones PAGO</span>
+        </div>
+
+        <div class="border border-emerald-155 p-4 rounded-xl space-y-1 bg-emerald-50/10">
+          <span class="text-emerald-650 text-[9px] font-bold uppercase tracking-wider">Abonos Registrados</span>
+          <h4 class="text-xl font-black text-emerald-750">Bs {{ cargaAuditoriaSeleccionada.monto_pagos_total | number:'1.2-2' }}</h4>
+          <span class="text-[9px] text-emerald-500 font-semibold">Pagos conciliados</span>
+        </div>
+
+      </div>
+
       <!-- Otros Contadores Financieros -->
-      <div class="border border-slate-250/70 rounded-xl p-5 space-y-4">
+      <div *ngIf="cargaAuditoriaSeleccionada.tipo_subida !== 'BASE_SALDOS'" class="border border-slate-250/70 rounded-xl p-5 space-y-4">
         <h4 class="text-xs font-bold text-slate-700 uppercase tracking-wider border-b border-slate-100 pb-2">Información Contable y Rendimiento</h4>
         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 text-xs font-semibold text-slate-650">
           
           <div class="space-y-0.5">
-            <span class="text-slate-400 font-medium">Intereses Cargados:</span>
+            <span class="text-slate-450 font-medium">Intereses Cargados:</span>
             <p class="text-slate-800 font-black">Bs {{ cargaAuditoriaSeleccionada.monto_interes_total | number:'1.2-2' }}</p>
           </div>
 
           <div class="space-y-0.5">
-            <span class="text-slate-400 font-medium">Gastos Administrativos:</span>
+            <span class="text-slate-450 font-medium">Gastos Administrativos:</span>
             <p class="text-slate-800 font-black">Bs {{ cargaAuditoriaSeleccionada.monto_gasto_adm_total | number:'1.2-2' }}</p>
           </div>
 
           <div class="space-y-0.5">
-            <span class="text-slate-400 font-medium">Movimientos Contables:</span>
+            <span class="text-slate-450 font-medium">Movimientos Contables:</span>
             <p class="text-slate-800 font-black">{{ cargaAuditoriaSeleccionada.movimientos_financieros_creados | number }} transacciones</p>
           </div>
 
           <div class="space-y-0.5">
-            <span class="text-slate-400 font-medium">Tiempo de Ingesta:</span>
+            <span class="text-slate-450 font-medium">Tiempo de Ingesta:</span>
             <p class="text-slate-800 font-black">{{ cargaAuditoriaSeleccionada.duracion_segundos | number:'1.2-2' }} segundos</p>
           </div>
 
