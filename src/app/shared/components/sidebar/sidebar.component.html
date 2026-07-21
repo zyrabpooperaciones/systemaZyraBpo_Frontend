@@ -16,10 +16,8 @@
   <!-- Header del Sidebar con el Logo de la Empresa -->
   <div class="flex items-center px-5 py-5 border-b border-slate-800" [class.justify-between]="isOpen()" [class.justify-center]="!isOpen()">
     <div class="flex items-center shrink-0" [class.space-x-3]="isOpen()">
-      <!-- Icono decorativo de Zyra con degradado naranja-amarillo -->
-      <div class="flex items-center justify-center w-9 h-9 rounded-lg bg-linear-to-tr from-orange-600 to-amber-500 shadow-md shadow-orange-500/20 text-white font-bold text-lg shrink-0">
-        Z
-      </div>
+      <!-- Logo de la empresa Zyra -->
+      <img src="zyra.png" alt="Zyra Logo" class="w-9 h-9 object-contain rounded-lg shrink-0 shadow-md shadow-slate-900/40" />
       <div *ngIf="isOpen()" class="transition-opacity duration-300">
         <h1 class="text-lg font-bold tracking-wider text-white">Zyra BPO</h1>
         <span class="text-xs text-slate-500 font-medium">Sistema de Operaciones</span>

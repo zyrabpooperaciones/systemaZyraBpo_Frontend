@@ -1,0 +1,510 @@
+<!-- ENCABEZADO DE SECCIÓN -->
+<div class="mb-6 flex flex-col md:flex-row md:items-center md:justify-between">
+  <div>
+    <h1 class="text-2xl font-bold tracking-tight text-slate-900">Consulta de Clientes</h1>
+    <p class="mt-1 text-sm text-slate-500">Busca deudores, visualiza cargos desglosados y audita el historial de transacciones financieras.</p>
+  </div>
+</div>
+
+<!-- ========================================================================= -->
+<!-- PANTALLA 1: BUSCADOR Y TABLA DE RESULTADOS -->
+<!-- ========================================================================= -->
+<ng-container *ngIf="!selectedClienteId">
+  
+  <!-- PANEL DE FILTROS -->
+  <div class="mb-6 rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+    <div class="grid grid-cols-1 gap-4 md:grid-cols-4">
+      
+      <!-- Búsqueda por Texto -->
+      <div class="md:col-span-2">
+        <label for="search-input" class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1.5">Búsqueda rápida</label>
+        <div class="relative">
+          <input
+            id="search-input"
+            type="text"
+            [(ngModel)]="query"
+            (keyup.enter)="buscar()"
+            placeholder="Código cliente, nombre, CI o teléfono..."
+            class="w-full rounded-lg border-slate-300 pl-10 text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+          />
+          <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+            <svg class="h-5 w-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      <!-- Filtro por Tramo -->
+      <div>
+        <label for="tramo-filter" class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1.5">Tramo</label>
+        <select
+          id="tramo-filter"
+          [(ngModel)]="tramoId"
+          class="w-full rounded-lg border-slate-300 text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+        >
+          <option [ngValue]="undefined">Todos los Tramos</option>
+          <option *ngFor="let t of tramos" [value]="t.id">{{ t.nombre }}</option>
+        </select>
+      </div>
+
+      <!-- Filtro por Campaña -->
+      <div>
+        <label for="campana-filter" class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1.5">Campaña</label>
+        <select
+          id="campana-filter"
+          [(ngModel)]="campanaId"
+          class="w-full rounded-lg border-slate-300 text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+        >
+          <option [ngValue]="undefined">Todas las Campañas</option>
+          <option *ngFor="let c of campanas" [value]="c.id">{{ c.nombre }}</option>
+        </select>
+      </div>
+
+    </div>
+
+    <!-- Filtro de Estado y Botones -->
+    <div class="mt-4 flex flex-col sm:flex-row sm:items-center sm:justify-between border-t border-slate-100 pt-4">
+      <div>
+        <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1.5">Filtrar por Estado de Deuda</label>
+        <div class="flex flex-wrap gap-2">
+          <button
+            (click)="estado = undefined"
+            [class]="!estado ? 'bg-indigo-50 text-indigo-700 border-indigo-200' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'"
+            class="rounded-full border px-3 py-1 text-xs font-medium transition-all"
+          >
+            Todos
+          </button>
+          <button
+            (click)="estado = 'ACTIVO'"
+            [class]="estado === 'ACTIVO' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'"
+            class="rounded-full border px-3 py-1 text-xs font-medium transition-all"
+          >
+            Activo
+          </button>
+          <button
+            (click)="estado = 'VENCIDO'"
+            [class]="estado === 'VENCIDO' ? 'bg-rose-50 text-rose-700 border-rose-200' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'"
+            class="rounded-full border px-3 py-1 text-xs font-medium transition-all"
+          >
+            Vencido
+          </button>
+          <button
+            (click)="estado = 'PAGADO'"
+            [class]="estado === 'PAGADO' ? 'bg-blue-50 text-blue-700 border-blue-200' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'"
+            class="rounded-full border px-3 py-1 text-xs font-medium transition-all"
+          >
+            Pagado
+          </button>
+        </div>
+      </div>
+
+      <div class="mt-4 sm:mt-0 flex gap-2 self-end">
+        <button
+          (click)="limpiarFiltros()"
+          class="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 shadow-sm hover:bg-slate-50 focus:outline-none transition-all"
+        >
+          Limpiar Filtros
+        </button>
+        <button
+          (click)="buscar()"
+          class="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none transition-all"
+        >
+          Aplicar Filtros
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- GRILLA DE RESULTADOS -->
+  <div class="relative overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+    
+    <!-- Spinner de carga -->
+    <div *ngIf="loading" class="absolute inset-0 z-10 flex items-center justify-center bg-white/70 backdrop-blur-sm">
+      <div class="flex flex-col items-center">
+        <div class="h-10 w-10 animate-spin rounded-full border-4 border-indigo-600 border-t-transparent"></div>
+        <p class="mt-3 text-sm font-medium text-slate-600">Buscando clientes en la base...</p>
+      </div>
+    </div>
+
+    <!-- Tabla -->
+    <div class="overflow-x-auto">
+      <table class="min-w-full divide-y divide-slate-200 text-left text-sm">
+        <thead class="bg-slate-50 text-xs font-semibold uppercase tracking-wider text-slate-500">
+          <tr>
+            <th class="px-6 py-4">Código Cliente</th>
+            <th class="px-6 py-4">Nombre Completo</th>
+            <th class="px-6 py-4">C.I.</th>
+            <th class="px-6 py-4">Teléfono Marcador</th>
+            <th class="px-6 py-4">Deudas</th>
+            <th class="px-6 py-4 text-right">Saldo Pendiente</th>
+            <th class="px-6 py-4 text-center">Estado</th>
+            <th class="px-6 py-4 text-center">Acciones</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100 bg-white">
+          <!-- Estado Inicial: Antes de Buscar -->
+          <tr *ngIf="!hasSearched">
+            <td colspan="8" class="px-6 py-16 text-center text-slate-500 bg-white">
+              <svg class="mx-auto h-12 w-12 text-slate-300 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+              <h3 class="text-sm font-bold text-slate-700">Buscador listo</h3>
+              <p class="text-xs text-slate-450 mt-1">Introduce un término de búsqueda o selecciona un filtro y presiona <strong>Aplicar Filtros</strong>.</p>
+            </td>
+          </tr>
+          
+          <!-- Sin Resultados -->
+          <tr *ngIf="hasSearched && clientes.length === 0" class="hover:bg-slate-50/50">
+            <td colspan="8" class="px-6 py-12 text-center text-slate-500">
+              <svg class="mx-auto h-12 w-12 text-slate-300 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+              </svg>
+              No se encontraron deudores que coincidan con la búsqueda.
+            </td>
+          </tr>
+          <tr *ngFor="let c of clientes" class="group hover:bg-slate-50/70 transition-colors">
+            <td class="whitespace-nowrap px-6 py-4 font-mono font-medium text-slate-700">{{ c.codigo_cliente_belcor }}</td>
+            <td class="px-6 py-4 font-medium text-slate-900">{{ c.nombre_completo }}</td>
+            <td class="whitespace-nowrap px-6 py-4 text-slate-500">{{ c.numero_documento || 'No Registrado' }}</td>
+            <td class="whitespace-nowrap px-6 py-4">
+              <span *ngIf="c.telefono_principal" class="inline-flex items-center gap-1.5 rounded-md bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-700 font-mono">
+                <svg class="h-3 w-3 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.94.725l.548 2.2a1 1 0 01-.321.988l-1.305.98a10.582 10.582 0 004.872 4.872l.98-1.305a1 1 0 01.988-.321l2.2.548a1 1 0 01.725.94V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                </svg>
+                {{ c.telefono_principal }}
+              </span>
+              <span *ngIf="!c.telefono_principal" class="text-xs italic text-slate-400">Sin teléfonos</span>
+            </td>
+            <td class="whitespace-nowrap px-6 py-4">
+              <span class="inline-flex items-center rounded-full bg-indigo-50 px-2.5 py-0.5 text-xs font-semibold text-indigo-700">
+                {{ c.cantidad_cargos }} {{ c.cantidad_cargos === 1 ? 'deuda' : 'deudas' }}
+              </span>
+            </td>
+            <td class="whitespace-nowrap px-6 py-4 text-right font-mono font-semibold text-slate-900">
+              {{ formatCurrency(c.saldo_total_pendiente) }}
+            </td>
+            <td class="whitespace-nowrap px-6 py-4 text-center">
+              <span [class]="
+                c.estado_general === 'ACTIVO' ? 'bg-emerald-50 text-emerald-700 ring-emerald-600/20' :
+                c.estado_general === 'VENCIDO' ? 'bg-rose-50 text-rose-700 ring-rose-600/20' :
+                c.estado_general === 'PAGADO' ? 'bg-blue-50 text-blue-700 ring-blue-600/20' :
+                'bg-slate-50 text-slate-600 ring-slate-600/20'"
+                class="inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold ring-1 ring-inset"
+              >
+                {{ c.estado_general }}
+              </span>
+            </td>
+            <td class="whitespace-nowrap px-6 py-4 text-center">
+              <button
+                (click)="verFicha(c.id)"
+                class="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-indigo-600 shadow-sm hover:bg-indigo-50 hover:border-indigo-300 transition-all"
+              >
+                <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                </svg>
+                Ver Ficha
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- PAGINACIÓN -->
+    <div class="flex items-center justify-between border-t border-slate-200 bg-slate-50 px-6 py-4">
+      <div class="text-xs font-medium text-slate-500">
+        Mostrando página {{ currentPage }} de {{ totalPaginas }} (Total: {{ totalItems }} deudores)
+      </div>
+      <div class="flex gap-2">
+        <button
+          [disabled]="currentPage === 1 || loading"
+          (click)="cambiarPagina(currentPage - 1)"
+          class="inline-flex items-center rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 shadow-sm hover:bg-slate-50 disabled:opacity-50 transition-all"
+        >
+          Anterior
+        </button>
+        <button
+          [disabled]="currentPage === totalPaginas || loading"
+          (click)="cambiarPagina(currentPage + 1)"
+          class="inline-flex items-center rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 shadow-sm hover:bg-slate-50 disabled:opacity-50 transition-all"
+        >
+          Siguiente
+        </button>
+      </div>
+    </div>
+
+  </div>
+
+</ng-container>
+
+<!-- ========================================================================= -->
+<!-- PANTALLA 2: EXPEDIENTE O FICHA 360° DEL CLIENTE -->
+<!-- ========================================================================= -->
+<ng-container *ngIf="selectedClienteId && selectedCliente">
+  
+  <!-- BOTÓN REGRESAR -->
+  <button
+    (click)="volverAlBuscador()"
+    class="mb-6 inline-flex items-center gap-2 rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm hover:bg-slate-50 transition-all"
+  >
+    <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+    </svg>
+    Volver al Buscador
+  </button>
+
+  <!-- DISTRIBUCIÓN EN 3 COLUMNAS -->
+  <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
+    
+    <!-- ========================================== -->
+    <!-- COLUMNA 1: DATOS PERSONALES Y TELÉFONOS -->
+    <!-- ========================================== -->
+    <div class="space-y-6">
+      
+      <!-- TARJETA PERFIL -->
+      <div class="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+        <div class="flex flex-col items-center text-center">
+          
+          <!-- Avatar con iniciales -->
+          <div class="mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-indigo-600 text-2xl font-bold uppercase tracking-wider text-white shadow-md">
+            {{ selectedCliente.nombre_completo.substring(0,2) }}
+          </div>
+          
+          <h2 class="text-lg font-bold text-slate-900">{{ selectedCliente.nombre_completo }}</h2>
+          <span class="mt-1 inline-flex items-center rounded-md bg-indigo-50 px-2.5 py-0.5 text-xs font-semibold text-indigo-700">
+            Código: {{ selectedCliente.codigo_cliente_belcor }}
+          </span>
+
+          <div class="mt-6 w-full space-y-3.5 text-left text-xs border-t border-slate-100 pt-4">
+            <div class="flex items-center justify-between text-slate-500">
+              <span class="font-medium">C.I. / Documento:</span>
+              <span class="font-semibold text-slate-900">{{ selectedCliente.numero_documento || 'No Registrado' }}</span>
+            </div>
+            <div class="flex items-center justify-between text-slate-500">
+              <span class="font-medium">Correo Electrónico:</span>
+              <span class="font-semibold text-slate-900">{{ selectedCliente.correo_electronico || 'No Registrado' }}</span>
+            </div>
+            <div class="flex items-center justify-between text-slate-500">
+              <span class="font-medium">Departamento:</span>
+              <span class="font-semibold text-slate-900">{{ selectedCliente.departamento || 'No Registrado' }}</span>
+            </div>
+            <div class="flex items-center justify-between text-slate-500">
+              <span class="font-medium">Sección:</span>
+              <span class="font-semibold text-slate-900">{{ selectedCliente.seccion || 'No Registrada' }}</span>
+            </div>
+            <div class="flex items-center justify-between text-slate-500">
+              <span class="font-medium">Perfil Riesgo:</span>
+              <span class="font-semibold text-slate-900">{{ selectedCliente.perfil_riesgo || 'No Registrado' }}</span>
+            </div>
+            <div class="flex items-center justify-between text-slate-500">
+              <span class="font-medium">Segmento Rolling:</span>
+              <span class="font-semibold text-slate-900">{{ selectedCliente.segmento_rolling || 'No Registrado' }}</span>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- TARJETA TELÉFONOS -->
+      <div class="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+        <h3 class="text-sm font-bold text-slate-900 uppercase tracking-wider mb-4">Directorio Telefónico</h3>
+        <div class="space-y-3">
+          <div *ngIf="selectedCliente.telefonos.length === 0" class="text-center text-xs italic text-slate-400 py-6">
+            Sin números de teléfono asignados
+          </div>
+          <div
+            *ngFor="let tel of selectedCliente.telefonos"
+            class="flex items-center justify-between rounded-lg border border-slate-100 bg-slate-50/50 p-3 hover:border-slate-200 transition-all"
+          >
+            <div class="flex items-center gap-3">
+              <!-- Prioridad de marcación -->
+              <span class="flex h-7 w-12 items-center justify-center rounded-md bg-indigo-50 text-xs font-bold text-indigo-700 ring-1 ring-indigo-200/50 font-mono">
+                {{ tel.prioridad.toFixed(1) }}
+              </span>
+              <div>
+                <p class="font-mono text-sm font-bold text-slate-900">{{ tel.numero }}</p>
+                <p class="text-[10px] uppercase font-semibold text-slate-400 tracking-wider">{{ tel.tipo }}</p>
+              </div>
+            </div>
+            
+            <span [class]="
+              tel.estado === 'ACTIVO' ? 'bg-emerald-50 text-emerald-700 ring-emerald-600/10' :
+              'bg-rose-50 text-rose-700 ring-rose-600/10'"
+              class="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-bold ring-1 ring-inset"
+            >
+              {{ tel.estado }}
+            </span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ========================================== -->
+    <!-- COLUMNA 2: CARGOS (DEUDAS) Y DESGLOSE -->
+    <!-- ========================================== -->
+    <div class="space-y-6">
+      
+      <!-- SELECTOR DE CARGO -->
+      <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+        <label for="cargo-filter-details" class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">Filtrar por deuda del cliente</label>
+        <select
+          id="cargo-filter-details"
+          [(ngModel)]="selectedCargoIdFilter"
+          (change)="onCargoFilterChange()"
+          class="w-full rounded-lg border-slate-300 text-sm shadow-sm focus:indigo-500 focus:ring-indigo-500"
+        >
+          <option value="ALL">Ver consolidado de todas sus deudas</option>
+          <option *ngFor="let cg of selectedCliente.cargos" [value]="cg.numero_cargo">
+            Cargo #{{ cg.numero_cargo }} - {{ cg.campana_nombre }}
+          </option>
+        </select>
+      </div>
+
+      <!-- CARGOS INDIVIDUALES -->
+      <div class="space-y-4">
+        <div
+          *ngFor="let cg of cargosFiltrados"
+          class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm hover:border-slate-300 transition-all"
+        >
+          <div class="flex items-center justify-between border-b border-slate-100 pb-3 mb-4">
+            <div>
+              <h4 class="text-sm font-bold text-slate-900">Cargo: #{{ cg.numero_cargo }}</h4>
+              <p class="text-[10px] text-slate-400 font-semibold uppercase tracking-wider mt-0.5">Campaña: {{ cg.campana_nombre }}</p>
+            </div>
+            
+            <span [class]="
+              cg.estado === 'ACTIVO' ? 'bg-emerald-50 text-emerald-700 ring-emerald-600/10' :
+              cg.estado === 'VENCIDO' ? 'bg-rose-50 text-rose-700 ring-rose-600/10' :
+              cg.estado === 'PAGADO' ? 'bg-blue-50 text-blue-700 ring-blue-600/10' :
+              'bg-slate-50 text-slate-700 ring-slate-600/10'"
+              class="inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold ring-1 ring-inset"
+            >
+              {{ cg.estado }}
+            </span>
+          </div>
+
+          <div class="grid grid-cols-2 gap-y-3 text-xs">
+            <div class="text-slate-500 font-medium">Días de Atraso:</div>
+            <div class="text-right font-semibold text-slate-900">{{ cg.dias_atraso }} días</div>
+            
+            <div class="text-slate-500 font-medium">Fecha Límite Cierre:</div>
+            <div class="text-right font-semibold text-slate-900">{{ cg.fecha_cierre ? (cg.fecha_cierre | date:'dd/MM/yyyy') : 'No Registrada' }}</div>
+            
+            <div class="text-slate-500 font-medium border-t border-slate-50 pt-2">Capital Inicial:</div>
+            <div class="text-right font-mono font-semibold text-slate-900 border-t border-slate-50 pt-2">{{ formatCurrency(cg.monto_inicial) }}</div>
+            
+            <div class="text-slate-500 font-medium">Intereses:</div>
+            <div class="text-right font-mono font-semibold text-slate-900">{{ formatCurrency(cg.monto_interes) }}</div>
+            
+            <div class="text-slate-500 font-medium">Gastos Adm:</div>
+            <div class="text-right font-mono font-semibold text-slate-900">{{ formatCurrency(cg.monto_gasto_adm) }}</div>
+            
+            <div class="text-emerald-600 font-semibold">Total Pagado:</div>
+            <div class="text-right font-mono font-bold text-emerald-600">{{ formatCurrency(cg.monto_pagado) }}</div>
+            
+            <div class="text-slate-900 font-bold border-t border-slate-200 pt-3">Saldo Cobrar:</div>
+            <div class="text-right font-mono text-sm font-extrabold text-indigo-600 border-t border-slate-200 pt-3">{{ formatCurrency(cg.saldo_cobrar) }}</div>
+          </div>
+          
+          <div *ngIf="cg.observacion" class="mt-3.5 rounded-lg bg-amber-50 p-2.5 text-xs text-amber-800 border border-amber-100">
+            <span class="font-bold">Observación:</span> {{ cg.observacion }}
+          </div>
+        </div>
+      </div>
+
+      <!-- PANEL DE TOTALES CONSOLIDADOS -->
+      <div class="rounded-xl border border-indigo-200 bg-slate-900 p-6 text-white shadow-md">
+        <h4 class="text-xs font-bold uppercase tracking-wider text-indigo-400 mb-4">Totales Consolidados del Cliente</h4>
+        
+        <div class="space-y-3.5 text-xs">
+          <div class="flex items-center justify-between text-slate-300">
+            <span>Total Capital Inicial:</span>
+            <span class="font-mono font-semibold">{{ formatCurrency(totalMontoInicial) }}</span>
+          </div>
+          <div class="flex items-center justify-between text-slate-300">
+            <span>Total Intereses:</span>
+            <span class="font-mono font-semibold">{{ formatCurrency(totalMontoInteres) }}</span>
+          </div>
+          <div class="flex items-center justify-between text-slate-300">
+            <span>Total Gastos Administrativos:</span>
+            <span class="font-mono font-semibold">{{ formatCurrency(totalMontoGastoAdm) }}</span>
+          </div>
+          <div class="flex items-center justify-between text-emerald-400">
+            <span class="font-semibold">Total Pagado a la Fecha:</span>
+            <span class="font-mono font-bold">{{ formatCurrency(totalMontoPagado) }}</span>
+          </div>
+          <div class="flex items-center justify-between border-t border-slate-800 pt-4 text-base">
+            <span class="font-bold text-indigo-300">Saldo Pendiente Neto:</span>
+            <span class="font-mono font-extrabold text-white text-lg">{{ formatCurrency(totalSaldoCobrar) }}</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ========================================== -->
+    <!-- COLUMNA 3: HISTORIAL CONTABLE (KARDEX) -->
+    <!-- ========================================== -->
+    <div>
+      <div class="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+        <h3 class="text-sm font-bold text-slate-900 uppercase tracking-wider mb-6">Bitácora Financiera (Kardex)</h3>
+        
+        <div class="timeline-container pr-2">
+          
+          <div *ngIf="movimientosFiltrados.length === 0" class="text-center text-xs italic text-slate-400 py-12">
+            No se han registrado transacciones o movimientos financieros aún.
+          </div>
+
+          <!-- Línea de tiempo vertical -->
+          <div class="relative border-l-2 border-slate-100 pl-4 space-y-6">
+            
+            <div *ngFor="let mov of movimientosFiltrados" class="relative group">
+              
+              <!-- Nodo de la Línea -->
+              <span [class]="
+                mov.tipo_movimiento === 'PAGO' ? 'bg-emerald-500 ring-emerald-100' :
+                mov.tipo_movimiento === 'INICIAL' ? 'bg-indigo-500 ring-indigo-100' :
+                mov.tipo_movimiento === 'INTERES' ? 'bg-amber-500 ring-amber-100' :
+                mov.tipo_movimiento === 'GASTO_ADM' ? 'bg-orange-500 ring-orange-100' :
+                'bg-slate-500 ring-slate-100'"
+                class="absolute -left-[24px] top-1.5 flex h-3.5 w-3.5 items-center justify-center rounded-full ring-4"
+              ></span>
+
+              <div class="rounded-lg bg-slate-50/50 p-3 hover:bg-slate-50 border border-slate-100/50 hover:border-slate-200 transition-all">
+                <div class="flex items-center justify-between">
+                  <span [class]="
+                    mov.tipo_movimiento === 'PAGO' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' :
+                    mov.tipo_movimiento === 'INICIAL' ? 'bg-indigo-50 text-indigo-700 border-indigo-200' :
+                    mov.tipo_movimiento === 'INTERES' ? 'bg-amber-50 text-amber-700 border-amber-200' :
+                    mov.tipo_movimiento === 'GASTO_ADM' ? 'bg-orange-50 text-orange-700 border-orange-200' :
+                    'bg-slate-50 text-slate-700 border-slate-200'"
+                    class="inline-flex items-center rounded-md border px-2 py-0.5 text-[10px] font-bold"
+                  >
+                    {{ mov.tipo_movimiento }}
+                  </span>
+                  
+                  <span class="font-mono text-sm font-bold" [class.text-emerald-600]="mov.tipo_movimiento === 'PAGO'" [class.text-slate-800]="mov.tipo_movimiento !== 'PAGO'">
+                    {{ mov.tipo_movimiento === 'PAGO' || mov.monto < 0 ? '-' : '+' }}{{ formatCurrency(mov.monto) }}
+                  </span>
+                </div>
+                
+                <div class="mt-2 text-[10px] text-slate-400 font-medium space-y-0.5">
+                  <p class="font-semibold text-slate-500">Asociado a Cargo #{{ mov.numero_cargo }}</p>
+                  <p>Fecha Reg: {{ formatDate(mov.fecha_movimiento) }}</p>
+                </div>
+              </div>
+
+            </div>
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+</ng-container>

@@ -117,4 +117,24 @@ export class TramosService {
   eliminarPlantilla(plantillaId: number): Observable<any> {
     return this.http.delete<any>(`${this.URL_PLANTILLAS}/${plantillaId}`);
   }
+
+  obtenerResumenKpi(tramoId: number): Observable<TramoResumenKpi> {
+    return this.http.get<TramoResumenKpi>(`${this.URL_TRAMOS}/${tramoId}/resumen-kpi`);
+  }
+}
+
+export interface TramoResumenKpi {
+  total_clientes: number;
+  total_cargos: number;
+  cargos_activos: number;
+  cargos_vencidos: number;
+  cargos_pagados: number;
+  fecha_cierre_cercana: string | null;
+  fecha_cierre_cercana_campanas: string[];
+  monto_inicial_total: number;
+  monto_interes_total: number;
+  monto_gasto_adm_total: number;
+  monto_pagado_total: number;
+  saldo_cobrar_total: number;
+  porcentaje_recuperacion: number;
 }

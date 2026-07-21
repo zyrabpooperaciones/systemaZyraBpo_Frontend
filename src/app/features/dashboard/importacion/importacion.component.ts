@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { TramosService, Plantilla } from '../../../core/services/tramos/tramos.service';
+import { TramosService, Plantilla, TramoResumenKpi } from '../../../core/services/tramos/tramos.service';
 import { 
   ImportacionService, 
   ValidationErrorDetail, 
@@ -54,6 +54,10 @@ export class ImportacionComponent implements OnInit {
   modalAuditoriaAbierto = false;
   cargaAuditoriaSeleccionada: HistorialImportacionResponse | null = null;
 
+  // Modal de KPIs globales de tramo
+  modalKpiAbierto = false;
+  kpiTramoSeleccionado: (TramoResumenKpi & { tramo_nombre: string }) | null = null;
+
   constructor(
     private tramosService: TramosService,
     private importacionService: ImportacionService,
@@ -103,6 +107,35 @@ export class ImportacionComponent implements OnInit {
     this.resumenCarga = null;
     this.porcentajeProgreso = 0;
     this.pasoActual = 1;
+  }
+
+  // --- ABRIR MODAL DE KPIs ---
+  abrirModalKpi(tramo: TramoActivoResponse, event: MouseEvent): void {
+    event.stopPropagation();
+    this.cargando = true;
+    this.tramosService.obtenerResumenKpi(tramo.id).subscribe({
+      next: (kpi) => {
+        this.kpiTramoSeleccionado = {
+          ...kpi,
+          tramo_nombre: tramo.nombre
+        };
+        this.modalKpiAbierto = true;
+        this.cargando = false;
+      },
+      error: () => {
+        this.toastService.error('Error al cargar los KPIs globales de la cartera.');
+        this.cargando = false;
+      }
+    });
+  }
+
+  cerrarModalKpi(): void {
+    this.modalKpiAbierto = false;
+    this.kpiTramoSeleccionado = null;
+  }
+
+  formatCurrency(value: number): string {
+    return new Intl.NumberFormat('es-BO', { style: 'currency', currency: 'BOB' }).format(value);
   }
 
   // --- CARGAR PLANTILLAS DEL TRAMO ---

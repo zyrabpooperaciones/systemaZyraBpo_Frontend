@@ -40,8 +40,17 @@
           </div>
         </div>
 
-        <div class="flex items-center justify-between border-t border-slate-100 pt-4 relative z-10">
-          <span class="text-xs font-semibold text-slate-400 group-hover:text-slate-800 transition-colors">Configurar y Subir Bases</span>
+        <div class="flex items-center justify-between border-t border-slate-100 pt-4 relative z-10 gap-2">
+          <!-- Botón de Estadísticas -->
+          <button 
+            (click)="abrirModalKpi(tramo, $event)"
+            class="flex items-center gap-1 px-3 py-1.5 bg-slate-50 hover:bg-slate-900 hover:text-white text-slate-600 rounded-lg text-xs font-bold transition-all border border-slate-100 hover:border-slate-900 cursor-pointer shadow-xs">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 002 2h2a2 2 0 002-2z" />
+            </svg>
+            <span>Ver Estadísticas</span>
+          </button>
+          
           <span class="p-1 bg-slate-50 group-hover:bg-slate-900 text-slate-500 group-hover:text-white rounded-lg transition-all duration-300">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
@@ -762,6 +771,154 @@
         (click)="cerrarModalAuditoria()"
         class="px-5 py-2.5 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-bold transition-all duration-150 cursor-pointer shadow-xs">
         Cerrar Reporte
+      </button>
+    </div>
+
+  </div>
+</div>
+
+<!-- ============================================================================
+     MODAL DE KPIs / ESTADÍSTICAS GLOBALES DEL TRAMO
+     ============================================================================ -->
+<div 
+  *ngIf="modalKpiAbierto && kpiTramoSeleccionado" 
+  class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fadeIn">
+  
+  <div class="bg-white border border-slate-200 rounded-2xl w-full max-w-2xl shadow-2xl p-6 flex flex-col space-y-6 relative max-h-[90vh] overflow-y-auto text-left">
+    
+    <!-- Modal Header -->
+    <div class="flex items-center justify-between border-b border-slate-100 pb-4">
+      <div>
+        <span class="text-[9px] font-black text-indigo-600 uppercase tracking-widest">Estadísticas Consolidadas</span>
+        <h3 class="text-xl font-black text-slate-900">Cartera: {{ kpiTramoSeleccionado.tramo_nombre }}</h3>
+      </div>
+      <button 
+        (click)="cerrarModalKpi()" 
+        class="p-1.5 hover:bg-slate-50 text-slate-400 hover:text-slate-600 rounded-lg transition-colors cursor-pointer">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+    </div>
+
+    <!-- Fila 1: Indicadores Operativos (Cajas de Control) -->
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div class="rounded-xl border border-slate-100 bg-slate-50/50 p-4">
+        <span class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Deudores Únicos</span>
+        <p class="mt-1 text-2xl font-black text-slate-800">{{ kpiTramoSeleccionado.total_clientes | number }}</p>
+      </div>
+      <div class="rounded-xl border border-slate-100 bg-slate-50/50 p-4">
+        <span class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Cargos en Gestión</span>
+        <p class="mt-1 text-2xl font-black text-slate-800">{{ kpiTramoSeleccionado.total_cargos | number }}</p>
+      </div>
+      <div class="rounded-xl border border-slate-100 bg-slate-50/50 p-4 flex flex-col justify-between">
+        <div>
+          <span class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Cierre más Cercano</span>
+          <p class="mt-1 text-sm font-extrabold text-slate-800">
+            {{ kpiTramoSeleccionado.fecha_cierre_cercana ? (kpiTramoSeleccionado.fecha_cierre_cercana | date:'dd/MM/yyyy') : 'Sin Fecha Cierre' }}
+          </p>
+        </div>
+        <div *ngIf="kpiTramoSeleccionado.fecha_cierre_cercana_campanas.length > 0" class="mt-1 border-t border-slate-150/40 pt-1.5">
+          <span class="text-[9px] font-semibold text-slate-400 uppercase tracking-wider block">Campaña(s):</span>
+          <div class="flex flex-wrap gap-1 mt-0.5">
+            <span *ngFor="let camp of kpiTramoSeleccionado.fecha_cierre_cercana_campanas" class="inline-flex items-center px-1.5 py-0.5 rounded bg-indigo-50 border border-indigo-100 text-[9px] font-bold text-indigo-700">
+              {{ camp }}
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Fila 2: Barra de Distribución Segmentada -->
+    <div class="space-y-2 border-t border-b border-slate-50 py-4">
+      <span class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Distribución de Deudas por Estado</span>
+      
+      <!-- Barra segmentada -->
+      <div class="h-3 w-full rounded-full bg-slate-100 flex overflow-hidden">
+        <!-- Pagado (Verde) -->
+        <div 
+          [style.width.%]="kpiTramoSeleccionado.total_cargos > 0 ? (kpiTramoSeleccionado.cargos_pagados / kpiTramoSeleccionado.total_cargos) * 100 : 0" 
+          class="bg-emerald-500 transition-all duration-300"
+          [title]="'Pagados: ' + kpiTramoSeleccionado.cargos_pagados">
+        </div>
+        <!-- Activo (Celeste) -->
+        <div 
+          [style.width.%]="kpiTramoSeleccionado.total_cargos > 0 ? (kpiTramoSeleccionado.cargos_activos / kpiTramoSeleccionado.total_cargos) * 100 : 0" 
+          class="bg-sky-450 transition-all duration-300"
+          [title]="'Activos: ' + kpiTramoSeleccionado.cargos_activos">
+        </div>
+        <!-- Vencido (Rojo) -->
+        <div 
+          [style.width.%]="kpiTramoSeleccionado.total_cargos > 0 ? (kpiTramoSeleccionado.cargos_vencidos / kpiTramoSeleccionado.total_cargos) * 100 : 0" 
+          class="bg-rose-500 transition-all duration-300"
+          [title]="'Vencidos: ' + kpiTramoSeleccionado.cargos_vencidos">
+        </div>
+      </div>
+
+      <!-- Leyendas -->
+      <div class="flex flex-wrap items-center justify-between text-xs pt-1.5 gap-2">
+        <div class="flex items-center gap-1.5">
+          <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+          <span class="text-slate-500 font-medium">Pagados: <strong class="text-slate-800 font-bold">{{ kpiTramoSeleccionado.cargos_pagados | number }}</strong></span>
+        </div>
+        <div class="flex items-center gap-1.5">
+          <span class="w-2.5 h-2.5 rounded-full bg-sky-450"></span>
+          <span class="text-slate-500 font-medium">Activos: <strong class="text-slate-800 font-bold">{{ kpiTramoSeleccionado.cargos_activos | number }}</strong></span>
+        </div>
+        <div class="flex items-center gap-1.5">
+          <span class="w-2.5 h-2.5 rounded-full bg-rose-500"></span>
+          <span class="text-slate-500 font-medium">Vencidos: <strong class="text-slate-800 font-bold">{{ kpiTramoSeleccionado.cargos_vencidos | number }}</strong></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Fila 3: KPIs Financieros -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
+      <!-- Tabla de Montos desglosados -->
+      <div class="space-y-3.5 text-xs text-slate-650">
+        <h4 class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Desglose de Cartera</h4>
+        
+        <div class="flex items-center justify-between">
+          <span>Capital Inicial Recibido:</span>
+          <span class="font-mono font-bold text-slate-800">{{ formatCurrency(kpiTramoSeleccionado.monto_inicial_total) }}</span>
+        </div>
+        <div class="flex items-center justify-between">
+          <span>Intereses Cargados:</span>
+          <span class="font-mono font-bold text-slate-800">{{ formatCurrency(kpiTramoSeleccionado.monto_interes_total) }}</span>
+        </div>
+        <div class="flex items-center justify-between">
+          <span>Gastos Administrativos:</span>
+          <span class="font-mono font-bold text-slate-800">{{ formatCurrency(kpiTramoSeleccionado.monto_gasto_adm_total) }}</span>
+        </div>
+        <div class="flex items-center justify-between border-t border-slate-100 pt-3">
+          <span class="font-bold text-slate-700">Monto Pendiente Actual:</span>
+          <span class="font-mono font-black text-indigo-600">{{ formatCurrency(kpiTramoSeleccionado.saldo_cobrar_total) }}</span>
+        </div>
+      </div>
+
+      <!-- Widget circular de Tasa de Recuperación -->
+      <div class="flex flex-col items-center justify-center bg-slate-50/50 rounded-2xl p-4 border border-slate-100/50">
+        <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-3">Tasa de Recuperación</span>
+        
+        <div class="relative flex items-center justify-center">
+          <div class="flex flex-col items-center justify-center h-28 w-28 rounded-full border-8 border-emerald-500 bg-white shadow-sm">
+            <span class="text-lg font-black text-slate-850">{{ kpiTramoSeleccionado.porcentaje_recuperacion }}%</span>
+            <span class="text-[8px] font-bold text-slate-400 uppercase tracking-wider mt-0.5">Recuperado</span>
+          </div>
+        </div>
+        
+        <p class="mt-4 text-[11px] font-semibold text-slate-550 text-center">
+          Total cobrado: <strong class="text-emerald-600 font-bold">{{ formatCurrency(kpiTramoSeleccionado.monto_pagado_total) }}</strong>
+        </p>
+      </div>
+    </div>
+
+    <!-- Modal Footer -->
+    <div class="flex items-center justify-end pt-4 border-t border-slate-100">
+      <button 
+        (click)="cerrarModalKpi()"
+        class="px-5 py-2.5 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-bold transition-all duration-150 cursor-pointer shadow-sm">
+        Cerrar Estadísticas
       </button>
     </div>
 
