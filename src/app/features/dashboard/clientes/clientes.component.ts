@@ -45,6 +45,8 @@ export class ClientesComponent implements OnInit {
   totalMontoGastoAdm: number = 0;
   totalMontoPagado: number = 0;
   totalSaldoCobrar: number = 0;
+  totalDescuentoAplicable: number = 0;
+  totalMontoParaLiquidar: number = 0;
 
   // Estados de carga y búsqueda
   loading: boolean = false;
@@ -164,6 +166,8 @@ export class ClientesComponent implements OnInit {
     this.totalMontoGastoAdm = filtrados.reduce((sum, c) => sum + c.monto_gasto_adm, 0);
     this.totalMontoPagado = filtrados.reduce((sum, c) => sum + c.monto_pagado, 0);
     this.totalSaldoCobrar = filtrados.reduce((sum, c) => sum + c.saldo_cobrar, 0);
+    this.totalDescuentoAplicable = filtrados.reduce((sum, c) => sum + (c.descuento_aplicable || 0), 0);
+    this.totalMontoParaLiquidar = filtrados.reduce((sum, c) => sum + (c.monto_para_liquidar || c.saldo_cobrar), 0);
   }
 
   formatCurrency(value: number): string {
@@ -179,5 +183,60 @@ export class ClientesComponent implements OnInit {
       hour: '2-digit',
       minute: '2-digit'
     });
+  }
+
+  exportarCSV(): void {
+    if (this.clientes.length === 0) {
+      this.toastService.warning('No hay datos en pantalla para exportar.');
+      return;
+    }
+
+    // Cabeceras del CSV
+    const headers = [
+      'Código Belcor',
+      'Nombre Completo',
+      'C.I.',
+      'Teléfono Marcador',
+      'Campañas Activas',
+      'Saldo Original (Bs)',
+      'Saldo con Descuento (Bs)',
+      'Estado'
+    ];
+
+    // Mapear filas
+    const rows = this.clientes.map(c => [
+      c.codigo_cliente_belcor,
+      c.nombre_completo,
+      c.numero_documento || '',
+      c.telefono_principal || '',
+      c.campanas_activas.join('; '),
+      c.saldo_total_pendiente,
+      c.saldo_neto_pendiente,
+      c.estado_general
+    ]);
+
+    // Generar formato CSV (con BOM para Excel en español)
+    let csvContent = '\uFEFF';
+    csvContent += headers.join(',') + '\n';
+    rows.forEach(row => {
+      const rowEscaped = row.map(val => {
+        const strVal = String(val).replace(/"/g, '""');
+        return `"${strVal}"`;
+      });
+      csvContent += rowEscaped.join(',') + '\n';
+    });
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    
+    link.setAttribute('href', url);
+    link.setAttribute('download', `Clientes_Marcador_${new Date().toISOString().slice(0, 10)}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    this.toastService.success('Archivo de exportación generado correctamente.');
   }
 }

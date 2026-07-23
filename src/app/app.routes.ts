@@ -56,6 +56,11 @@ export const routes: Routes = [
         data: { modulo: 'importacion' }
       },
       {
+        path: 'descuentos',
+        loadComponent: () => import('./features/dashboard/descuentos/descuentos.component').then(m => m.DescuentosComponent),
+        data: { modulo: 'descuentos' }
+      },
+      {
         path: 'perfil',
         loadComponent: () => import('./features/dashboard/perfil/perfil.component').then(m => m.PerfilComponent)
       },

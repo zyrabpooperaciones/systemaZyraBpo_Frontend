@@ -23,6 +23,8 @@ export interface CargoClienteDetalle {
   monto_gasto_adm: number;
   monto_pagado: number;
   saldo_cobrar: number;
+  descuento_aplicable: number;
+  monto_para_liquidar: number;
   estado: string;
   observacion: string | null;
 }
@@ -57,6 +59,7 @@ export interface ClienteSearchItem {
   numero_documento: string | null;
   cantidad_cargos: number;
   saldo_total_pendiente: number;
+  saldo_neto_pendiente: number;
   telefono_principal: string | null;
   campanas_activas: string[];
   estado_general: string;

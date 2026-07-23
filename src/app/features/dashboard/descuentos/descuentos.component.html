@@ -1,0 +1,477 @@
+<!-- ENCABEZADO DE SECCIÓN -->
+<div class="mb-6 flex flex-col md:flex-row md:items-center md:justify-between">
+  <div>
+    <h1 class="text-2xl font-bold tracking-tight text-slate-900">Descuentos</h1>
+    <p class="mt-1 text-sm text-slate-500">Configura descuentos temporales condonados de capital, intereses y gastos por tramos y filtros de segmentación en tiempo real.</p>
+  </div>
+</div>
+
+<!-- ========================================================================= -->
+<!-- VISTA A: SELECCIÓN DE TRAMO / CARTERA -->
+<!-- ========================================================================= -->
+<div *ngIf="!selectedTramo" class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+  <div *ngFor="let t of tramos" 
+       class="group relative overflow-hidden rounded-2xl border border-slate-200 bg-white p-6 shadow-sm hover:shadow-md hover:border-indigo-300 transition-all duration-300">
+    <div class="flex items-center justify-between mb-4">
+      <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600 group-hover:bg-indigo-600 group-hover:text-white transition-all duration-300">
+        <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+      </div>
+      <span [class]="t.activo ? 'bg-emerald-50 text-emerald-700 ring-emerald-600/20' : 'bg-slate-50 text-slate-600 ring-slate-600/20'"
+            class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ring-1 ring-inset">
+        {{ t.activo ? 'Cartera Activa' : 'Inactiva' }}
+      </span>
+    </div>
+    
+    <h3 class="text-lg font-bold text-slate-900 group-hover:text-indigo-600 transition-colors">Cartera: {{ t.nombre }}</h3>
+    <p class="mt-1 text-xs text-slate-400 font-medium">Gestiona los descuentos dinámicos para los deudores de este tramo.</p>
+    
+    <div class="mt-6 pt-4 border-t border-slate-50">
+      <button 
+        (click)="seleccionarTramo(t)"
+        class="w-full inline-flex items-center justify-center gap-1.5 rounded-lg bg-indigo-600 px-3.5 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 transition-all duration-150 cursor-pointer">
+        Ver Descuentos
+        <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+        </svg>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ========================================================================= -->
+<!-- VISTA B: GESTIÓN DE DESCUENTOS DEL TRAMO SELECCIONADO -->
+<!-- ========================================================================= -->
+<div *ngIf="selectedTramo" class="space-y-6">
+  
+  <!-- BOTÓN REGRESAR Y NUEVO -->
+  <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+    <button
+      (click)="deseleccionarTramo()"
+      class="inline-flex items-center gap-2 rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm hover:bg-slate-50 transition-all duration-150"
+    >
+      <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+      </svg>
+      Volver a Carteras
+    </button>
+
+    <button
+      (click)="abrirModal()"
+      class="inline-flex items-center justify-center gap-1.5 rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-bold text-white shadow-sm hover:bg-indigo-700 transition-all duration-150 cursor-pointer"
+    >
+      <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+      </svg>
+      Nuevo Descuento
+    </button>
+  </div>
+
+  <!-- PANEL PRINCIPAL CON PESTAÑAS (TABS) -->
+  <div class="relative overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+    
+    <!-- Header del Panel & Selector de Tabs -->
+    <div class="bg-slate-50 border-b border-slate-200">
+      <div class="px-6 py-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 border-b border-slate-100">
+        <div>
+          <h2 class="text-sm font-bold text-slate-800">Condonaciones de Deuda - Cartera {{ selectedTramo.nombre }}</h2>
+          <p class="text-xs text-slate-500 mt-0.5">Controla y monitorea los descuentos parametrizados.</p>
+        </div>
+      </div>
+
+      <!-- PESTAÑAS DE NAVEGACIÓN -->
+      <div class="flex border-b border-slate-100 bg-slate-50/50 px-6">
+        <button
+          (click)="activeTab = 'activos'"
+          [class]="activeTab === 'activos' ? 'border-indigo-600 text-indigo-600 font-bold' : 'border-transparent text-slate-500 hover:text-slate-700 font-medium'"
+          class="flex items-center gap-2 py-3 px-4 border-b-2 text-xs uppercase tracking-wider transition-all cursor-pointer"
+        >
+          Descuentos Activos
+          <span [class]="activeTab === 'activos' ? 'bg-indigo-100 text-indigo-700' : 'bg-slate-200 text-slate-600'" 
+                class="rounded-full px-2 py-0.5 text-[10px] font-bold">
+            {{ totalActivos }}
+          </span>
+        </button>
+        <button
+          (click)="activeTab = 'inactivos'"
+          [class]="activeTab === 'inactivos' ? 'border-indigo-600 text-indigo-600 font-bold' : 'border-transparent text-slate-500 hover:text-slate-700 font-medium'"
+          class="flex items-center gap-2 py-3 px-4 border-b-2 text-xs uppercase tracking-wider transition-all cursor-pointer"
+        >
+          Historial (Inactivas)
+          <span [class]="activeTab === 'inactivos' ? 'bg-indigo-100 text-indigo-700' : 'bg-slate-200 text-slate-600'"
+                class="rounded-full px-2 py-0.5 text-[10px] font-bold">
+            {{ totalInactivos }}
+          </span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Spinner de Carga -->
+    <div *ngIf="loading" class="flex justify-center items-center py-16 bg-white/70">
+      <div class="h-8 w-8 animate-spin rounded-full border-4 border-indigo-600 border-t-transparent"></div>
+    </div>
+
+    <!-- Lista de Campañas Segmentada -->
+    <div *ngIf="!loading" class="divide-y divide-slate-100 bg-white">
+      
+      <!-- Estado vacío -->
+      <div *ngIf="descuentosFiltrados.length === 0" class="px-6 py-16 text-center text-slate-500">
+        <svg class="mx-auto h-12 w-12 text-slate-300 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+        <span *ngIf="activeTab === 'activos'">No hay ningún descuento activo actualmente en este tramo.</span>
+        <span *ngIf="activeTab === 'inactivos'">No hay registro de descuentos desactivados anteriormente.</span>
+      </div>
+
+      <!-- Fila de Campaña de Descuento -->
+      <div *ngFor="let desc of descuentosFiltrados" class="p-6 hover:bg-slate-50/50 transition-colors flex flex-col md:flex-row md:items-start md:justify-between gap-4">
+        <div class="space-y-3 flex-1">
+          <div class="flex items-center gap-2.5">
+            <h3 class="text-base font-bold text-slate-900">{{ desc.nombre }}</h3>
+            <span [class]="desc.activo ? 'bg-emerald-50 text-emerald-700 ring-emerald-600/10' : 'bg-slate-50 text-slate-500 ring-slate-200/50'"
+                  class="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold ring-1 ring-inset uppercase">
+              {{ desc.activo ? 'Activa' : 'Desactivada' }}
+            </span>
+          </div>
+
+          <!-- Montos -->
+          <div class="flex flex-wrap gap-x-6 gap-y-2 text-xs">
+            <div *ngIf="desc.descuento_monto_fijo > 0" class="text-slate-600 font-medium">
+              Monto Fijo Condonado: <span class="font-bold text-indigo-600 font-mono">{{ formatCurrency(desc.descuento_monto_fijo) }}</span>
+            </div>
+            <div *ngIf="desc.pct_descuento_capital > 0" class="text-slate-600 font-medium">
+              Descuento Capital: <span class="font-bold text-slate-800 font-mono">{{ desc.pct_descuento_capital }}%</span>
+            </div>
+            <div *ngIf="desc.pct_descuento_interes > 0" class="text-slate-600 font-medium">
+              Descuento Intereses: <span class="font-bold text-slate-800 font-mono">{{ desc.pct_descuento_interes }}%</span>
+            </div>
+            <div *ngIf="desc.pct_descuento_gasto > 0" class="text-slate-600 font-medium">
+              Descuento Gastos Adm.: <span class="font-bold text-slate-800 font-mono">{{ desc.pct_descuento_gasto }}%</span>
+            </div>
+          </div>
+
+          <!-- Filtros de Segmentación -->
+          <div class="space-y-1.5 pt-2.5 border-t border-slate-100">
+            <div class="flex flex-wrap items-center gap-x-2 gap-y-1 text-[11px] text-slate-500">
+              <span class="font-bold text-slate-600 uppercase tracking-wider text-[9px]">Campaña(s):</span>
+              <span *ngIf="desc.campanas.length === 0" class="italic text-slate-400">Todas</span>
+              <span *ngFor="let camp of desc.campanas" class="inline-flex items-center rounded bg-slate-100 px-1.5 py-0.5 text-[10px] font-semibold text-slate-700">
+                {{ camp }}
+              </span>
+            </div>
+            <div class="flex flex-wrap items-center gap-x-2 gap-y-1 text-[11px] text-slate-500">
+              <span class="font-bold text-slate-600 uppercase tracking-wider text-[9px]">Departamento(s):</span>
+              <span *ngIf="desc.departamentos.length === 0" class="italic text-slate-400">Todos</span>
+              <span *ngFor="let dep of desc.departamentos" class="inline-flex items-center rounded bg-slate-100 px-1.5 py-0.5 text-[10px] font-semibold text-slate-700">
+                {{ dep }}
+              </span>
+            </div>
+            <div *ngIf="desc.perfiles_riesgo && desc.perfiles_riesgo.length > 0" class="flex flex-wrap items-center gap-x-2 gap-y-1 text-[11px] text-slate-500">
+              <span class="font-bold text-slate-600 uppercase tracking-wider text-[9px]">Perfiles de Riesgo:</span>
+              <span *ngFor="let perf of desc.perfiles_riesgo" class="inline-flex items-center rounded bg-slate-100 px-1.5 py-0.5 text-[10px] font-semibold text-slate-700">
+                {{ perf }}
+              </span>
+            </div>
+            <div *ngIf="desc.segmentos_rolling && desc.segmentos_rolling.length > 0" class="flex flex-wrap items-center gap-x-2 gap-y-1 text-[11px] text-slate-500">
+              <span class="font-bold text-slate-600 uppercase tracking-wider text-[9px]">Segmentos Rolling:</span>
+              <span *ngFor="let roll of desc.segmentos_rolling" class="inline-flex items-center rounded bg-slate-100 px-1.5 py-0.5 text-[10px] font-semibold text-slate-700">
+                {{ roll }}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Botón de Desactivación Premium -->
+        <div *ngIf="desc.activo" class="self-start md:self-center shrink-0">
+          <button
+            (click)="desactivarDescuento(desc)"
+            class="inline-flex items-center gap-1.5 rounded-lg border border-red-200 bg-red-50/50 hover:bg-red-600 hover:text-white hover:border-red-600 px-4 py-2 text-xs font-bold text-red-700 transition-all duration-150 cursor-pointer shadow-xs"
+          >
+            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            Desactivar Descuento
+          </button>
+        </div>
+
+        <!-- Sello de Inactivo -->
+        <div *ngIf="!desc.activo" class="self-start md:self-center shrink-0 text-slate-400 text-xs italic font-medium flex items-center gap-1">
+          <svg class="h-4 w-4 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+          </svg>
+          Historial / Condonado
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
+
+<!-- ========================================================================= -->
+<!-- MODAL DE NUEVA CAMPAÑA DE DESCUENTO -->
+<!-- ========================================================================= -->
+<div *ngIf="showModal" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-xs p-4 overflow-y-auto">
+  <div class="relative w-full max-w-2xl bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col my-8 max-h-[90vh] animate-fade-in">
+    
+    <!-- Header del Modal -->
+    <div class="px-6 py-4 border-b border-slate-100 bg-slate-50 flex items-center justify-between">
+      <div>
+        <h3 class="text-base font-bold text-slate-900">Nuevo Descuento</h3>
+        <p class="text-xs text-slate-500 mt-0.5">Asigna reglas y filtros activos para la cartera {{ selectedTramo?.nombre }}</p>
+      </div>
+      <button (click)="cerrarModal()" class="text-slate-400 hover:text-slate-600 transition-colors">
+        <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+    </div>
+
+    <!-- Cuerpo del Modal (Scrollable) -->
+    <div class="p-6 space-y-6 overflow-y-auto flex-1">
+      
+      <!-- Input Nombre de Campaña -->
+      <div class="space-y-1.5">
+        <label for="desc-nombre" class="block text-xs font-semibold uppercase tracking-wider text-slate-500">Nombre del Descuento</label>
+        <input
+          id="desc-nombre"
+          type="text"
+          [(ngModel)]="nombre"
+          placeholder="Ej: Descuento 100% Intereses CE1"
+          class="w-full rounded-lg border-slate-300 text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+        />
+      </div>
+
+      <!-- Configuración de Montos (Monto Fijo vs Por Rubros) -->
+      <div class="border-t border-slate-100 pt-4 space-y-4">
+        <h4 class="text-xs font-bold uppercase tracking-wider text-indigo-600">Configuración de Descuentos (Bs / %)</h4>
+        
+        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <!-- Monto Fijo -->
+          <div class="space-y-1.5">
+            <label for="desc-fijo" class="block text-xs font-semibold uppercase tracking-wider text-slate-500">Descuento de Monto Fijo (Bs)</label>
+            <div class="relative rounded-lg shadow-sm">
+              <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                <span class="text-xs text-slate-500">Bs</span>
+              </div>
+              <input
+                id="desc-fijo"
+                type="number"
+                min="0"
+                [(ngModel)]="descuentoMontoFijo"
+                class="w-full rounded-lg border-slate-300 pl-8 text-sm focus:border-indigo-500 focus:ring-indigo-500"
+              />
+            </div>
+          </div>
+
+          <!-- Pct Capital -->
+          <div class="space-y-1.5">
+            <label for="desc-capital" class="block text-xs font-semibold uppercase tracking-wider text-slate-500">Descuento sobre Capital (%)</label>
+            <div class="relative rounded-lg shadow-sm">
+              <input
+                id="desc-capital"
+                type="number"
+                min="0"
+                max="100"
+                [(ngModel)]="pctDescuentoCapital"
+                class="w-full rounded-lg border-slate-300 pr-8 text-sm focus:border-indigo-500 focus:ring-indigo-500"
+              />
+              <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
+                <span class="text-xs text-slate-500">%</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Pct Intereses -->
+          <div class="space-y-1.5">
+            <label for="desc-intereses" class="block text-xs font-semibold uppercase tracking-wider text-slate-500">Descuento sobre Intereses (%)</label>
+            <div class="relative rounded-lg shadow-sm">
+              <input
+                id="desc-intereses"
+                type="number"
+                min="0"
+                max="100"
+                [(ngModel)]="pctDescuentoInteres"
+                class="w-full rounded-lg border-slate-300 pr-8 text-sm focus:border-indigo-500 focus:ring-indigo-500"
+              />
+              <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
+                <span class="text-xs text-slate-500">%</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Pct Gastos -->
+          <div class="space-y-1.5">
+            <label for="desc-gastos" class="block text-xs font-semibold uppercase tracking-wider text-slate-500">Descuento sobre Gastos Adm. (%)</label>
+            <div class="relative rounded-lg shadow-sm">
+              <input
+                id="desc-gastos"
+                type="number"
+                min="0"
+                max="100"
+                [(ngModel)]="pctDescuentoGasto"
+                class="w-full rounded-lg border-slate-300 pr-8 text-sm focus:border-indigo-500 focus:ring-indigo-500"
+              />
+              <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
+                <span class="text-xs text-slate-500">%</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Filtros de Segmentación (Habilitación por Switch) -->
+      <div class="border-t border-slate-100 pt-4 space-y-5">
+        <h4 class="text-xs font-bold uppercase tracking-wider text-indigo-600">Filtros de Segmentación Activos</h4>
+        <p class="text-[11px] text-slate-400 -mt-2">Habilita y selecciona las dimensiones sobre las que quieres que aplique el descuento. Si no activas un filtro, aplicará a todas las deudas del tramo.</p>
+        
+        <div class="space-y-5">
+          <!-- DIMENSIÓN 1: CAMPAÑA -->
+          <div class="rounded-xl border border-slate-200 bg-slate-50/50 p-4 space-y-3">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold text-slate-700 uppercase tracking-wide">1. Filtrar por Campaña</span>
+              <!-- Toggle Switch -->
+              <label class="relative inline-flex items-center cursor-pointer">
+                <input type="checkbox" [(ngModel)]="filterByCampana" class="sr-only peer">
+                <div class="w-9 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-indigo-600"></div>
+              </label>
+            </div>
+
+            <!-- Listado si está habilitado -->
+            <div *ngIf="filterByCampana" class="pt-2.5 border-t border-slate-200/60 animate-fade-in space-y-2">
+              <div *ngIf="campanasDisponibles.length === 0" class="rounded-lg bg-amber-50 p-3 text-xs text-amber-800 border border-amber-100">
+                ⚠️ No hay deudores con saldo pendiente de cobro asociados a campañas en este tramo para mostrar.
+              </div>
+              <div *ngIf="campanasDisponibles.length > 0" class="max-h-36 overflow-y-auto grid grid-cols-2 gap-2 p-1">
+                <div *ngFor="let c of campanasDisponibles" class="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    [id]="'modal-c-' + c"
+                    [checked]="campanasFiltro.includes(c)"
+                    (change)="toggleFiltroCampana(c)"
+                    class="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+                  />
+                  <label [for]="'modal-c-' + c" class="text-xs text-slate-700 font-medium cursor-pointer">{{ c }}</label>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- DIMENSIÓN 2: DEPARTAMENTO -->
+          <div class="rounded-xl border border-slate-200 bg-slate-50/50 p-4 space-y-3">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold text-slate-700 uppercase tracking-wide">2. Filtrar por Departamento</span>
+              <!-- Toggle Switch -->
+              <label class="relative inline-flex items-center cursor-pointer">
+                <input type="checkbox" [(ngModel)]="filterByDepartamento" class="sr-only peer">
+                <div class="w-9 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-indigo-600"></div>
+              </label>
+            </div>
+
+            <!-- Listado si está habilitado -->
+            <div *ngIf="filterByDepartamento" class="pt-2.5 border-t border-slate-200/60 animate-fade-in space-y-2">
+              <div *ngIf="departamentosDisponibles.length === 0" class="rounded-lg bg-amber-50 p-3 text-xs text-amber-800 border border-amber-100">
+                ⚠️ No hay departamentos de deudores con deuda activa registrados para segmentar.
+              </div>
+              <div *ngIf="departamentosDisponibles.length > 0" class="max-h-36 overflow-y-auto grid grid-cols-2 gap-2 p-1">
+                <div *ngFor="let dep of departamentosDisponibles" class="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    [id]="'modal-dep-' + dep"
+                    [checked]="departamentosFiltro.includes(dep)"
+                    (change)="toggleFiltroDepto(dep)"
+                    class="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+                  />
+                  <label [for]="'modal-dep-' + dep" class="text-xs text-slate-700 font-medium cursor-pointer">{{ dep }}</label>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- DIMENSIÓN 3: PERFIL DE RIESGO -->
+          <div class="rounded-xl border border-slate-200 bg-slate-50/50 p-4 space-y-3">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold text-slate-700 uppercase tracking-wide">3. Filtrar por Perfil de Riesgo</span>
+              <!-- Toggle Switch -->
+              <label class="relative inline-flex items-center cursor-pointer">
+                <input type="checkbox" [(ngModel)]="filterByPerfilRiesgo" class="sr-only peer">
+                <div class="w-9 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-indigo-600"></div>
+              </label>
+            </div>
+
+            <!-- Listado si está habilitado -->
+            <div *ngIf="filterByPerfilRiesgo" class="pt-2.5 border-t border-slate-200/60 animate-fade-in space-y-2">
+              <div *ngIf="perfilesRiesgoDisponibles.length === 0" class="rounded-lg bg-amber-50 p-3 text-xs text-amber-800 border border-amber-100">
+                ⚠️ No hay perfiles de riesgo con deuda activa registrados para segmentar.
+              </div>
+              <div *ngIf="perfilesRiesgoDisponibles.length > 0" class="max-h-36 overflow-y-auto grid grid-cols-2 gap-2 p-1">
+                <div *ngFor="let perf of perfilesRiesgoDisponibles" class="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    [id]="'modal-perf-' + perf"
+                    [checked]="perfilesRiesgoFiltro.includes(perf)"
+                    (change)="toggleFiltroPerfil(perf)"
+                    class="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+                  />
+                  <label [for]="'modal-perf-' + perf" class="text-xs text-slate-700 font-medium cursor-pointer">{{ perf }}</label>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- DIMENSIÓN 4: SEGMENTO ROLLING -->
+          <div class="rounded-xl border border-slate-200 bg-slate-50/50 p-4 space-y-3">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold text-slate-700 uppercase tracking-wide">4. Filtrar por Segmento Rolling</span>
+              <!-- Toggle Switch -->
+              <label class="relative inline-flex items-center cursor-pointer">
+                <input type="checkbox" [(ngModel)]="filterBySegmentoRolling" class="sr-only peer">
+                <div class="w-9 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-indigo-600"></div>
+              </label>
+            </div>
+
+            <!-- Listado si está habilitado -->
+            <div *ngIf="filterBySegmentoRolling" class="pt-2.5 border-t border-slate-200/60 animate-fade-in space-y-2">
+              <div *ngIf="segmentosRollingDisponibles.length === 0" class="rounded-lg bg-amber-50 p-3 text-xs text-amber-800 border border-amber-100">
+                ⚠️ No hay segmentos rolling con deuda activa registrados para segmentar.
+              </div>
+              <div *ngIf="segmentosRollingDisponibles.length > 0" class="max-h-36 overflow-y-auto grid grid-cols-2 gap-2 p-1">
+                <div *ngFor="let roll of segmentosRollingDisponibles" class="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    [id]="'modal-roll-' + roll"
+                    [checked]="segmentosRollingFiltro.includes(roll)"
+                    (change)="toggleFiltroRolling(roll)"
+                    class="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+                  />
+                  <label [for]="'modal-roll-' + roll" class="text-xs text-slate-700 font-medium cursor-pointer">{{ roll }}</label>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Footer del Modal -->
+    <div class="px-6 py-4 border-t border-slate-100 bg-slate-50 flex justify-end gap-2 shrink-0">
+      <button
+        (click)="cerrarModal()"
+        class="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm hover:bg-slate-50 transition-all duration-150 cursor-pointer"
+      >
+        Cancelar
+      </button>
+      <button
+        (click)="guardarDescuento()"
+        class="rounded-lg bg-indigo-600 px-5 py-2 text-sm font-bold text-white shadow-sm hover:bg-indigo-700 transition-all duration-150 cursor-pointer"
+      >
+        Crear Descuento
+      </button>
+    </div>
+
+  </div>
+</div>
